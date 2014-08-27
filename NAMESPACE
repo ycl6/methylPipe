@@ -1,0 +1,34 @@
+useDynLib(methylPipe, .registration=TRUE)
+import(methods)
+importFrom(Gviz, GenomeAxisTrack, GeneRegionTrack, DataTrack, plotTracks, IdeogramTrack, AnnotationTrack, SequenceTrack)
+importFrom(GenomicAlignments,readGAlignments)
+importMethodsFrom(IRanges, start, end, "start<-", "end<-") 
+importFrom(IRanges, IRanges, findOverlaps, countOverlaps, union, intersect, match)
+importFrom(marray, maPalette)
+importFrom(gplots, heatmap.2)
+importFrom(BiocGenerics,rbind, width, strand, as.data.frame, unlist)
+importFrom(Rsamtools, asBam, seqnamesTabix, scanTabix, TabixFile)
+importFrom(parallel, makeCluster)
+importFrom(data.table,fread)
+importFrom(GenomicRanges,GRanges, mcols, "mcols<-", seqnames, width, queryHits, subjectHits, strand, coverage, rowData, "strand<-", assays)
+importFrom(Biostrings, DNAString, startIndex, width, unmasked, reverse, Views, vmatchPattern, endIndex, coverage)
+importFrom(rtracklayer, mcols, width, strand)
+importFrom(Gviz, width, seqnames, strand, coverage)
+importFrom(GenomicAlignments,seqnames, width, coverage)
+importFrom(IRanges,queryHits, subjectHits, width, reverse, Views, coverage)
+importFrom(GenomeInfoDb,seqlengths,"seqlengths<-")
+
+importMethodsFrom(BiocGenerics, clusterApplyLB, clusterEvalQ)
+
+importClassesFrom(GenomicRanges,SummarizedExperiment)
+importMethodsFrom(GenomicRanges,SummarizedExperiment)
+
+importMethodsFrom(rtracklayer, browserSession, ucscTableQuery, browserView, track, "track<-")
+importFrom(rtracklayer, GenomicData)
+
+exportPattern("^[^\\.]")
+
+exportClasses(GEcollection, GElist, BSdata, BSdataSet)
+exportMethods("[[", "[[<-", "[", "$", show, chr, binC, binmC, binrC, nbins, binscore,
+              "binscore<-", mCsmoothing, findDMR)
+
