@@ -48,12 +48,12 @@ setGeneric('findDMR',
            function(object, Nproc=10, ROI=NULL,
                     pmdGRanges=NULL, MCClass='mCG',
                     dmrSize=10, dmrBp=1000, binsize=0,
-                    eprop=0.3, coverage=1, Pvalue=NULL, SNPs=NULL)
+                    eprop=0, coverage=1, Pvalue=NULL, SNPs=NULL)
            standardGeneric('findDMR'))
 setMethod('findDMR', 'BSdataSet', function(object, Nproc=10, ROI=NULL,
                                            pmdGRanges=NULL, MCClass='mCG',
                                            dmrSize=10, dmrBp=1000,
-                                           binsize=0, eprop=0.3, coverage=1, Pvalue=NULL, SNPs=NULL) {
+                                           binsize=0, eprop=0, coverage=1, Pvalue=NULL, SNPs=NULL) {
     if(!is.numeric(Nproc))
         stop('Nproc has to be of class numeric ..')
     if(!is.null(pmdGRanges) && !is(pmdGRanges, "GRanges"))
@@ -91,6 +91,7 @@ setMethod('findDMR', 'BSdataSet', function(object, Nproc=10, ROI=NULL,
         Chr <- as.character(Blocks[Ind,1])
         start <- round(Blocks[Ind,2])
         refgr <- GRanges(seqnames = Chr, ranges = IRanges(Blocks[Ind,2], end = Blocks[Ind,3]))
+        minC <- DmrSize
 
                                         # mC calls are retrieved for each sample
         resList <- list()
@@ -107,7 +108,7 @@ setMethod('findDMR', 'BSdataSet', function(object, Nproc=10, ROI=NULL,
 
         if(Binsize > 0){
             message('getting mc data .. ')
-      Cposind <- NULL
+            Cposind <- NULL
             Cposind <- unlist(getCpos(refgr, seqContext = sub('m', '', MCClass), nbins = 1,
                                       org = samples@org))
             if(length(Cposind)==0) return(NULL)
@@ -208,9 +209,9 @@ setMethod('findDMR', 'BSdataSet', function(object, Nproc=10, ROI=NULL,
                                         # -100 identify NA in C code ..
                 ratios[is.na(ratios)] <- -100
                 res <- .C(.binning, score= as.double(ratios),
-                          Cposind= as.double(Cposind),
-                          as.integer(length(Cposind)),
-                          bins= smbins, as.integer(length(smbins)),
+                          pos= as.double(Cposind),
+                          poslength=as.integer(length(Cposind)),
+                          binvec= smbins, binlength=as.integer(length(smbins)),
                                         # binout contains the bin avg
                           binout= as.double(rep(-100, length(smbins)-1)),
                           doavg= as.integer(1), PACKAGE='methylPipe')$binout
@@ -228,6 +229,7 @@ setMethod('findDMR', 'BSdataSet', function(object, Nproc=10, ROI=NULL,
             ratioGR <- GRanges(Rle(Chr), IRanges(Cposind,Cposind), elementmetaData=smMat)
             rm(smMat)
             names(mcols(ratioGR)) <- samples@group
+            minC <- 6
         }
                                         #ratioMat <- as.data.frame(ratioMat)
         maxR <- length(ratioGR)
@@ -273,7 +275,7 @@ setMethod('findDMR', 'BSdataSet', function(object, Nproc=10, ROI=NULL,
                 df <- as.data.frame(mcols(ratioGR)[ind:indNext,])
                                         # filtering the df based on having some data > 0 there ..
                 df <- df[rowSums(df,na.rm=TRUE) > 0,]
-                minN <- max(5, round(0.8*DmrSize)) # minimum number of available data required
+                minN <- max(5, round(0.8*minC)) # minimum number of available data required
                 if(nrow(df) < minN) next
                 cs <- apply(df, 2, function(x) length(which(x > 0)))
                                         # at least one sample with at least minN positions with data > 0
