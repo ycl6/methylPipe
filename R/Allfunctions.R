@@ -8,6 +8,7 @@ process.hmc <- function(file, output_folder, Coverage){
     if(!is(Coverage,"GRanges"))
         stop('Coverage has to be of class GRanges with column name coverage..')
 
+    output_folder <- normalizePath(output_folder)  
     sample_name <- unlist(strsplit(file, split=".txt"))
     output.files <- list()
     temp_data <- fread(file, sep="\t", header=FALSE)
@@ -45,6 +46,9 @@ meth.call <- function(files_location, output_folder, no_overlap, read.context, N
         stop('read.context has to be of class character ..')
     if(!is.numeric(Nproc))
         stop('Nproc has to be of class numeric ..')
+    
+    files_location <- normalizePath(files_location)
+    output_folder <- normalizePath(output_folder)
 
                                         # read.type
     if( !( read.context %in% c("CpG","All")))
@@ -166,6 +170,9 @@ BSprepare <-  function(files_location, output_folder, tabixPath, bc=1.5/100) {
     if(!file.exists(paste(tabixPath, '/bgzip', sep='')))
         stop('bgzip not found at tabixPath ..')
 
+    files_location <- normalizePath(files_location)
+    output_folder <- normalizePath(output_folder)
+    tabixPath <- normalizePath(tabixPath)
     binomTestMulti <- function(mat, maxN=50, p=bc, bh=TRUE) {
         bmat <- matrix(NA, maxN, maxN)
         for(i in 1:maxN) {
@@ -187,20 +194,20 @@ BSprepare <-  function(files_location, output_folder, tabixPath, bc=1.5/100) {
     for(i in 1:length(all_files)) {
         filecg <- all_files[i]
         message(filecg)
-        filemC <- paste0(files_location, filecg, '.mC')
-        str <- paste('cut -f5,6', paste0(files_location, filecg), '>', filemC)
+        filemC <- paste0(files_location, "/", filecg, '.mC')
+        str <- paste('cut -f5,6', paste0(files_location, "/", filecg), '>', filemC)
         system(str)
                                         # computing binomial pvalues
-        mCdat <- read.table(filemC, sep='\t', header=FALSE, row.names=NULL)
+        mCdat <- fread(filemC)
         mCdat <- as.matrix(mCdat)
         mCdat[,2] <- mCdat[,1]+ mCdat[,2]
         pV <- binomTestMulti(mCdat, p=bc)
                                         # attaching pvalues
 
         filepV <- paste0(filemC, '.pvalues')
-        fileTabix <- paste0(files_location, sample_name[i], '_tabix.txt')
+        fileTabix <- paste0(files_location, "/", sample_name[i], '_tabix.txt')
         write(pV, file=filepV, ncolumns=1)
-        str <- paste('paste', paste0(files_location, filecg), filepV, '>', fileTabix)
+        str <- paste('paste', paste0(files_location, "/", filecg), filepV, '>', fileTabix)
         system(str)
         system(paste('rm', filepV, filemC))
     }
@@ -211,12 +218,12 @@ BSprepare <-  function(files_location, output_folder, tabixPath, bc=1.5/100) {
                                         # generating the TABIX compressed file
     for(filetb in Tabix_files) {
         filetb_name <- unlist(strsplit(filetb,split=".txt"))
-        str <- paste('cat', paste0(files_location, filetb), '>', paste0(output_folder, filetb_name,"_out.txt"))
+        str <- paste('cat', paste0(files_location, "/", filetb), '>', paste0(output_folder, "/", filetb_name,"_out.txt"))
         system(str)
-        str <- paste0(tabixPath, '/bgzip ', output_folder, filetb_name,"_out.txt")
+        str <- paste0(tabixPath, '/bgzip ', output_folder, "/", filetb_name,"_out.txt")
         system(str)
                                         # generating the TABIX index file
-        fileoutgz <- paste0(output_folder, filetb_name,"_out.txt", '.gz')
+        fileoutgz <- paste0(output_folder, "/", filetb_name,"_out.txt", '.gz')
         str <- paste(tabixPath, '/tabix -s 1 -b 2 -e 2 -f ', fileoutgz, sep='')
         system(str)
     }
@@ -373,6 +380,11 @@ mapBSdata2GRanges <- function(GenoRanges, Sample, context='all', mC=1, depth=0,
                                         # assigning NA to GRanges regions in chrs not represented
     tabixChrs <- seqnamesTabix(Sample@file)
     representedChr <- which(as.character(seqnames(GenoRanges)) %in% tabixChrs)
+    if(length(representedChr) == 0)
+      {
+      res <- as.list(rep(NA, length(GenoRanges))) 
+      return(res)
+      }
     otherChr <- which(!(as.character(seqnames(GenoRanges)) %in% tabixChrs))
     if(length(otherChr) > 0) res <- as.list(rep(NA, length(GenoRanges)))
 
