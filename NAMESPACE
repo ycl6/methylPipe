@@ -19,7 +19,6 @@ importFrom(IRanges,queryHits, subjectHits, width, reverse, Views, coverage)
 importFrom(GenomeInfoDb,seqlengths,"seqlengths<-")
 
 importMethodsFrom(BiocGenerics, clusterApplyLB, clusterEvalQ)
-importClassesFrom(IRanges,SimpleList)
 importClassesFrom(GenomicRanges,SummarizedExperiment)
 importMethodsFrom(GenomicRanges,SummarizedExperiment)
 
