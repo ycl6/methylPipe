@@ -11,7 +11,7 @@ License: GPL(>=2)
 LazyLoad: yes
 Imports: marray, gplots, IRanges, BiocGenerics, rtracklayer, Gviz,
         GenomicAlignments, Biostrings, parallel, data.table,
-        GenomeInfoDb
+        GenomeInfoDb, S4Vectors
 Depends: R (>= 3.0), methods, grDevices, graphics, stats, utils,
         GenomicRanges, Rsamtools
 Suggests: BSgenome.Hsapiens.UCSC.hg18,
