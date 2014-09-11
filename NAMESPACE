@@ -1,39 +1,27 @@
 useDynLib(methylPipe, .registration=TRUE)
 import(methods)
+import(Gviz)
+import(Rsamtools)
+import(IRanges)
+import(S4Vectors)
+import(Biostrings)
 
-importFrom(Gviz, GenomeAxisTrack, GeneRegionTrack, DataTrack, plotTracks, IdeogramTrack, AnnotationTrack, SequenceTrack)
-importFrom(GenomicAlignments,readGAlignments)
+importFrom(GenomicAlignments,readGAlignments,seqnames, width, coverage)
 importFrom(marray, maPalette)
 importFrom(gplots, heatmap.2)
 importFrom(BiocGenerics,rbind, width, strand, "strand<-", as.data.frame, unlist)
-importFrom(Rsamtools, asBam, seqnamesTabix, scanTabix, TabixFile)
 importFrom(parallel, makeCluster)
 importFrom(data.table,fread)
 importFrom(GenomicRanges,GRanges, coverage, rowData,  assays)
-importFrom(S4Vectors, queryHits, subjectHits, mcols, "mcols<-", Rle, runValue)
-importFrom(Biostrings, DNAString, startIndex, width, unmasked, reverse, Views, vmatchPattern, endIndex, coverage)
-importFrom(rtracklayer, mcols, width, strand)
-importFrom(Gviz, width, seqnames, strand, coverage)
-importFrom(GenomicAlignments,seqnames, width, coverage)
-
-importFrom(IRanges, width, reverse, Views, coverage)
-importFrom(IRanges, IRanges, findOverlaps, countOverlaps, union, intersect, match)
-
 importFrom(GenomeInfoDb,seqlengths,"seqlengths<-",seqnames)
 
-importMethodsFrom(IRanges, start, end, "start<-", "end<-")
 importMethodsFrom(BiocGenerics, clusterApplyLB, clusterEvalQ)
 
-importClassesFrom(S4Vectors,Hits)
 importClassesFrom(GenomicRanges,SummarizedExperiment)
 importMethodsFrom(GenomicRanges,SummarizedExperiment)
-
-importMethodsFrom(rtracklayer, browserSession, ucscTableQuery, browserView, track, "track<-")
-importFrom(rtracklayer, GenomicData)
 
 exportPattern("^[^\\.]")
 
 exportClasses(GEcollection, GElist, BSdata, BSdataSet)
 exportMethods("[[", "[[<-", "[", "$", show, chr, binC, binmC, binrC, nbins, binscore,
               "binscore<-", mCsmoothing, findDMR)
-
