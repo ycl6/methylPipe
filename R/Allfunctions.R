@@ -622,6 +622,27 @@ profileDNAmetBin <- function(GenoRanges, Sample,
     }
     mlsum <- lapply(bsdat, sapply, sumFun)
     binmC <- matrix(unlist(mlsum), length(mlsum), Nbins, byrow=T)
+    unmethList <- list()
+    uncov <- Sample@uncov
+    for(bin in 1:Nbins) {
+      gel <- extractBinGRanges(GenoRanges=GenoRanges, bin=bin, nbins=Nbins)
+      ov <- findOverlaps(gel,uncov)
+      if(length(ov) > 0)
+      {
+        val <- rep(0,length(GenoRanges))
+        ind <- unique(queryHits(ov))
+        val[ind] <- NA
+        unmethList[[bin]] <- val 
+      }
+      else 
+        unmethList[[bin]] <- 0
+    }
+    
+    unmethList <- matrix(unlist(unmethList), Nbins, length(GenoRanges), byrow=T)
+    unmethList <- t(unmethList)
+    ind <- which(is.na(binmC))
+    binmC[ind] <- unmethList[ind]
+    
     wbp <- round(width(GenoRanges)/Nbins)
     binmC <- apply(binmC, 2, function(x) x/wbp)
 
