@@ -726,7 +726,8 @@ profileDNAmetBinParallel <- function(GenoRanges, Sample, mcCLASS='mCG',
     Chrs <- unique(as.character(seqnames(GenoRanges)))
     tabixChrs <- seqnamesTabix(Sample@file)
     otherChr <- which(!(as.character(seqnames(GenoRanges)) %in% tabixChrs))
-    GenoRanges <- GenoRanges[-c(otherChr)]
+    otherChr <- which(!(as.character(seqnames(GenoRanges)) %in% tabixChrs))
+    if(length(otherChr) > 0) GenoRanges <- GenoRanges[-c(otherChr)]
     Chrs <- unique(as.character(seqnames(GenoRanges)))
     Nproc <- min(Nproc, length(Chrs))
     cl <- makeCluster(Nproc, 'PSOCK')
