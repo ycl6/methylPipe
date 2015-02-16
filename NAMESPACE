@@ -24,4 +24,4 @@ exportPattern("^[^\\.]")
 
 exportClasses(GEcollection, GElist, BSdata, BSdataSet)
 exportMethods("[[", "[[<-", "[", "$", show, chr, binC, binmC, binrC, nbins, binscore,
-              "binscore<-", mCsmoothing, findDMR)
+              "binscore<-", mCsmoothing, findDMR, methstats)
