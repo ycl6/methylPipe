@@ -86,6 +86,7 @@ meth.call <- function(files_location, output_folder, no_overlap, read.context, N
     }
 
     parallel::mclapply(cmd, runperl, mc.cores=Nproc, mc.preschedule=TRUE)
+    
     message("Creating temporary BAM files from input SAM files...")
     message()
     setwd(output_folder)
@@ -158,7 +159,7 @@ GElist <- function(...)
 }
 
 
-BSprepare <-  function(files_location, output_folder, tabixPath, bc=1.5/100) {
+BSprepare <-  function(files_location, output_folder, tabixPath, bc=1.5/100, chrnumeric=FALSE) {
     if(!is.character(files_location))
         stop('files_location has to be of class character ..')
     if(!is.character(output_folder))
@@ -169,6 +170,8 @@ BSprepare <-  function(files_location, output_folder, tabixPath, bc=1.5/100) {
         stop('tabix not found at tabixPath ..')
     if(!file.exists(paste(tabixPath, '/bgzip', sep='')))
         stop('bgzip not found at tabixPath ..')
+    if(!is.logical(chrnumeric))
+      stop('chrnumeric has to be either TRUE or FALSE ..')
 
     files_location <- normalizePath(files_location)
     output_folder <- normalizePath(output_folder)
@@ -189,8 +192,31 @@ BSprepare <-  function(files_location, output_folder, tabixPath, bc=1.5/100) {
         pValues <-  -round(10*log10(pValues))
         return(pValues)
     }
+    
+    
+    ####### checking for the chromosome column ##########
     all_files <- list.files(path = files_location, pattern = ".txt")
+    for (i in 1:length(all_files))
+    {
+      path <- paste0(files_location,"/",all_files[[i]])
+      temp_data <- fread(path,nrows=10)
+      if(is.numeric(temp_data$V1)==TRUE)
+      {
+        cmd <- paste("sed -i 's/^/chr/'",path) 
+        system(cmd)
+      }
+    }
+    
+    ####################################################
+    
     sample_name <- unlist(strsplit(all_files, split=".txt"))
+    cmd <- paste("sort -k1,1 -k2,4n", paste0(files_location, "/", all_files) , ">", 
+                 paste0(files_location, "/", sample_name,"_sort.txt"))
+    sapply(cmd,system)
+    cmd <- paste("mv", paste0(files_location, "/", sample_name,"_sort.txt"), 
+                 paste0(files_location, "/", sample_name,".txt"))
+    sapply(cmd,system)
+      
     for(i in 1:length(all_files)) {
         filecg <- all_files[i]
         message(filecg)
@@ -214,11 +240,12 @@ BSprepare <-  function(files_location, output_folder, tabixPath, bc=1.5/100) {
                                         # concatenating, compressing and building tabix index
     message('postprocessing ..')
     Tabix_files <- list.files(path = files_location, pattern = "_tabix.txt")
-                                        #sample_name <- unlist(strsplit(Tabix_files, split="_tabix.txt"))
+                                        
                                         # generating the TABIX compressed file
     for(filetb in Tabix_files) {
         filetb_name <- unlist(strsplit(filetb,split=".txt"))
-        str <- paste('cat', paste0(files_location, "/", filetb), '>', paste0(output_folder, "/", filetb_name,"_out.txt"))
+        str <- paste('cat', paste0(files_location, "/", filetb), '>', 
+                     paste0(output_folder, "/", filetb_name,"_out.txt"))
         system(str)
         str <- paste0(tabixPath, '/bgzip ', output_folder, "/", filetb_name,"_out.txt")
         system(str)

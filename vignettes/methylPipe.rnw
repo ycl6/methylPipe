@@ -153,6 +153,17 @@ sres <- mCsmoothing(H1.db, gr, Scorefun='sum', Nbins=50, plot=TRUE)
 @
 \end{center}
 
+\section{Descriptive statistics of DNA methylation}
+
+\Rpackage{methylPipe} allows checking the basic stats about the methylation data such as range, mean and quantile distribution of methylation and assess sample similarity with correlation and clustering analysis. The \Rfunction{methstats} method computes pairwise correlation coefficients (Pearson) between the methylation profiles across all the samples in \Rclass{BSdataSet} object.This function plots scatter plot and correlation coefficients and also outputs a correlation matrix. In addition clustering of samples is performed based on the similarity of their methylation profiles. The function also outputs the dendrogram.
+\begin{center}
+<<met4,fig.width=6,fig.height=5,out.width='.85\\textwidth',message=FALSE,cache=TRUE>>=
+stats.set <- BSdataSet(org=Hsapiens, group=c("C","C","E","E"), IMR_1=IMR90.db, 
+IMR_2=IMR90.db, H1_1=H1.db,H1_2=H1.db)
+methstats(stats.set,chrom="chr20",mcClass='mCG', Nproc=1)
+@
+\end{center}
+
 \section{Profiling DNA methylation on genomic ranges}
 
 \Rpackage{methylPipe} allows profiling DNA methylation over a set of genomic regions and determining 
@@ -164,7 +175,7 @@ The \Rfunction{mapBSdata2GRanges} method retrieves mC calls given a \Rclass{BSda
 a set of genomic regions. In the following example we will extract the CG sites for a set of genomic 
 regions. In particular we will consider a \Rclass{GRanges} object of genomic regions that spans 2Kb upstream
 and downstream the TSS of the transcript ids on the first 500Kb of chromosome 20: 
-<<met4,message=FALSE,cache=TRUE>>=
+<<met5,message=FALSE,cache=TRUE>>=
 gr_file <- system.file('extdata', 'GR_chr20.Rdata', package='methylPipe')
 load(gr_file)
 resmC <- mapBSdata2GRanges(GenoRanges=GR_chr20, Sample=H1.db, context='CG')
@@ -190,7 +201,7 @@ each bin of it, the absolute methylation density (mC/bp), the density of possibl
 (C/bp) and the relative methylation level (mC/C) will be determined. For example, in case of the 
 CG context: mCG/bp, CG/bp and mCG/CG densities will be stored for each bin of each genomic region in the 
 binmC, binC and binrC data slots, respectively.
-<<met5,message=FALSE,cache=TRUE>>=
+<<met6,message=FALSE,cache=TRUE>>=
 gec.H1 <- profileDNAmetBin(GenoRanges=GR_chr20, Sample=H1.db, mcCLASS='mCG', nbins=3)
 binmC(gec.H1)[4:5,]
 binC(gec.H1)[4:5,]

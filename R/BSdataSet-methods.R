@@ -60,8 +60,8 @@ setMethod('findDMR', 'BSdataSet', function(object, Nproc=10, ROI=NULL,
         stop('pmdGRanges has to be either NULL or an object of class GRanges ..')
     if(!is.null(ROI) && !is(ROI, "GRanges"))
         stop('ROI has to be either NULL or an object of class GRanges ..')
-    if(!(MCClass %in% c('mCG','mCHG','mCHH', 'nonCG')))
-        stop('MCClass has to be one of mCG, mCHG, mCHH or nonCG..')
+    if(!(MCClass %in% c('mCG','mCHG','mCHH', 'all')))
+        stop('MCClass has to be one of mCG, mCHG, mCHH or all')
     if(!is.numeric(dmrSize))
         stop('dmrSize has to be an object of class numeric ..')
     if(dmrSize < 5)
@@ -374,3 +374,150 @@ setMethod('findDMR', 'BSdataSet', function(object, Nproc=10, ROI=NULL,
                      MethDiff_Perc= DmrDf[,5], log2Enrichment= DmrDf[,6])
     DmrGR <- sort(DmrGR)
 })
+
+
+setGeneric('methstats',
+           function(object, chrom, mcClass='mCG', Nproc=1)
+             standardGeneric('methstats'))
+setMethod('methstats', 'BSdataSet', function(object, chrom, mcClass='mCG', Nproc=1) {
+  if(!is.null(chrom) && !is.character(chrom))
+    stop('chrom has to be either NULL or an object of class character ..')
+  if(!(mcClass %in% c('mCG','mCHG','mCHH', 'all')))
+    stop('mcClass has to be one of mCG, mCHG, mCHH or all..')
+  if(!is.numeric(Nproc))
+    stop('Nproc has to be of class numeric ..')
+  
+  # parallelize tasks based on each chromosome
+  Methchr <- function(Ind, Blocks, samples, mcContext)
+  {
+    resList <- list()
+    Cposind <- NULL
+    Chr <- as.character(Blocks[Ind,1])
+    gr <- GRanges(seqnames = Chr, ranges = IRanges(Blocks[Ind,2], end = Blocks[Ind,3]))
+    
+    for(j in 1:length(samples)) {
+      message('retreiving methylation data from sample.. ')
+      resList[[j]] <- mapBSdata2GRanges(GenoRanges= gr, Sample= samples[[j]], depth=0,
+                                        context= sub('m', '', mcContext))[[1]]
+      if(!is(resList[[j]],"GRanges")) return(NULL)
+      Cposind <- c(Cposind, start(resList[[j]]))    
+    }
+    
+    Cposind <- round(unique(Cposind))
+    Cposind <- sort(Cposind)
+    
+    message('building ratioGR .. ')
+    ratioMat <- matrix(0, length(Cposind), length(samples))
+    ratioGR <- GRanges(Rle(Chr), IRanges(Cposind, Cposind), elementmetaData=ratioMat)
+    rm(ratioMat)
+    names(mcols(ratioGR)) <- names(samples)
+    
+    for(i in 1:length(samples)) {
+      message('fixing unmethylated C .. ')
+      # removing cytosines positions not covered by sequencing
+      uncov <- samples[[i]]@uncov
+      uncov <- uncov[seqnames(uncov) == Chr]
+      ov <- findOverlaps(ratioGR, uncov)
+      if(length(ov)>0) ratioGR <- ratioGR[-unique(queryHits(ov))]
+      if(length(ratioGR)== 0) return(NULL)
+      
+      message('filling ratioGR .. ')
+      ind <- findOverlaps(resList[[i]], ratioGR)
+      mc <- mcols(resList[[i]])$C/(mcols(resList[[i]])$C+ mcols(resList[[i]])$T)
+      mcols(ratioGR)[,i][subjectHits(ind)] <- round(mc[queryHits(ind)],3)    
+    }
+    ratioGR
+  }
+  
+  Chrs <- list()
+  for (i in 1:length(object))
+  {
+    tabixRef <- TabixFile(object[[i]]@file)
+    Chrs[[i]] <- as.character(seqnamesTabix(tabixRef))
+  }
+  Chrs <- unique(unlist(Chrs))
+  
+  if(!is.null(chrom))
+  {
+    if(!chrom %in% Chrs) 
+    {
+      stop('chromosome not available in samples .. ')
+    }
+    blocks <- splitChrs(chrs=Chrs, org=object@org)
+    ind <- which(blocks[,1]==chrom)
+    blocks <- blocks[ind,]
+  }
+  else
+    blocks <- splitChrs(chrs=Chrs, org=object@org)
+  
+  cl <- makeCluster(Nproc, type='PSOCK')
+  clRes <- clusterApplyLB(cl, 1:nrow(blocks),
+                          Methchr, Blocks=blocks, samples=object, 
+                          mcContext=mcClass)
+  ind <- which(is.na(clRes)==TRUE)
+  if(length(ind)!=0)
+    clRes <- clRes[-c(ind)]
+  if(length(clRes)==1)
+    clRes <- clRes[[1]]
+  else
+    clRes <- do.call("append",clRes)
+  
+  mc_table <- as.data.frame(mcols(clRes))
+  rm(clRes)
+  
+  
+  ########## statistics and plots ##########
+  
+  ######### descriptive stats ##########
+  statistics_results <- list()
+  statistics_results[[1]] <- summary(mc_table)
+  statistics_results[[2]] <- cor(mc_table)
+  names(statistics_results) <- c("descriptive_stats","correlation_mat")
+  
+  ##### correlation plots #########
+  
+  panel.cor <- function(x, y, digits=2, cex.cor)
+  {
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r <- abs(cor(x, y))
+    txt <- format(c(r, 0.123456789), digits=digits)[1]
+    test <- cor.test(x,y)
+    Signif <- ifelse(round(test$p.value,3)<0.01,"p<0.01",paste("p=",round(test$p.value,3)))  
+    text(0.5, 0.25, paste("r=",txt))
+    text(.5, .75, Signif)
+  }
+  
+  panel.smooth<-function (x, y, col = "orange", bg = NA, pch = 46, 
+                          cex = 1.5, col.smooth = "red", span = 2/3, iter = 3, ...) 
+  {
+    points(x, y, pch = pch, col = col, bg = bg, cex = cex)
+    ok <- is.finite(x) & is.finite(y)
+    if (any(ok)) 
+      lines(stats::lowess(x[ok], y[ok], f = span, iter = iter), 
+            col = col.smooth, ...)
+  }
+  
+  panel.hist <- function(x, ...)
+  {
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(usr[1:2], 0, 1.5) )
+    h <- hist(x, plot = FALSE)
+    breaks <- h$breaks; nB <- length(breaks)
+    y <- h$counts; y <- y/max(y)
+    rect(breaks[-nB], 0, breaks[-1], y, col="brown", ...)
+  }
+  
+  pairs(mc_table,lower.panel=panel.smooth, upper.panel=panel.cor,diag.panel=panel.hist, 
+        main="Correlation Matrix")
+  ######### clustering plots ####
+  
+  clust_mat <- t(mc_table)
+  dist_mat <- dist(clust_mat, method = "euclidean")
+  x <- hclust(dist_mat)
+  dev.new()
+  plot(x, main="Methylation Clustering", xlab="Samples")
+  
+  return(statistics_results)
+}
+)

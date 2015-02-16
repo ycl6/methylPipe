@@ -21,7 +21,8 @@ The package offers the following functionalities:
 \item findPMDs : Find partially methylated regions for a given sample    
 \item mapBSdata2GRanges : Retrieve mC calls for a GRanges from a BSdata object for a sample 
 \item BSdataSet-class : This class is a set of BSdata objects
-\item findDMR : Identifying differentially methylated regions for pairwise or multiple samples comparision	    
+\item findDMR : Identifying differentially methylated regions for pairwise or multiple samples comparision
+\item methstats : Descriptive methylation statistics of samples within BSdataSet object
 \item consolidateDMRs : Joins differentially methylated regions according to their proximity to each other, statistical significance, methylation difference and DMR type
 \item GEcollection-class : This class is used to define and manipulate a set of genomic regions and the associated DNA methylation patterns
 \item getCpos : Get genomic Cxx positons for a series of genomic regions	       
