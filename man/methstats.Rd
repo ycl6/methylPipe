@@ -9,14 +9,20 @@
   Exploratory methylation statistics of samples in BSdataSet object.
 }
 \usage{
-\S4method{methstats}{methylPipe,BSdataSet}(object, chrom, mcClass='mCG', Nproc=1)
+\S4method{methstats}{methylPipe,BSdataSet}(object, chrom, mcClass='mCG', minC=1, coverage=1, pval=1, Nproc=1)
 }
 \arguments{
   \item{object}{An object of class \link{BSdataSet}}
   \item{chrom}{character; either NULL or an object of class character}
   \item{MCClass}{character; the mC sequence context to be considered,
     one of all, mCG, mCHG or mCHH}
-    \item{Nproc}{numeric; the number of processors to use, one chromosome
+  \item{minC}{numeric; the minumum number of reads with C (DNA-methylation
+    events) at a given cytosine genomic position}
+  \item{coverage}{numeric; the minimum number of total reads at a given
+    cytosine genomic position}
+  \item{pval}{numeric; the minimum binomial pValue for an mC call at a
+    given cytosine genomic position}
+  \item{Nproc}{numeric; the number of processors to use, one chromosome
     is ran for each processor}
 }
 \details{The function provides basic statistical methods which computes descriptive statistics, 
@@ -29,9 +35,9 @@ correlation matrix and clustering of samples within the BSdataSet.
 \examples{
 require(BSgenome.Hsapiens.UCSC.hg18)
 uncov_GR <- GRanges('chr20', IRanges(14350, 18349))
-H1data <- system.file('extdata', 'H1_chr20_CG_10k.gz', package='methylPipe')
+H1data <- system.file('extdata', 'H1_chr20_CG_10k_tabix_out.txt.gz', package='methylPipe')
 H1.db <- BSdata(file=H1data, uncov=uncov_GR, org=Hsapiens)
-IMR90data <- system.file('extdata', 'IMR90_chr20_CG_10k.gz', package='methylPipe')
+IMR90data <- system.file('extdata', 'IMR90_chr20_CG_10k_tabix_out.txt.gz', package='methylPipe')
 IMR90.db <- BSdata(file=IMR90data, uncov=uncov_GR, org=Hsapiens)
 H1.IMR90.set <- BSdataSet(org=Hsapiens, group=c("C","C","E","E"), IMR_1=IMR90.db, 
 IMR_2=IMR90.db, H1_1=H1.db,H1_2=H1.db)

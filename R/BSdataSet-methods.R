@@ -377,18 +377,28 @@ setMethod('findDMR', 'BSdataSet', function(object, Nproc=10, ROI=NULL,
 
 
 setGeneric('methstats',
-           function(object, chrom, mcClass='mCG', Nproc=1)
+           function(object, chrom, mcClass='mCG', minC=1, coverage=1, pval=1, Nproc=1)
              standardGeneric('methstats'))
-setMethod('methstats', 'BSdataSet', function(object, chrom, mcClass='mCG', Nproc=1) {
+setMethod('methstats', 'BSdataSet', function(object, chrom, mcClass='mCG', minC=1, 
+                                             coverage=1, pval=1, Nproc=1) {
   if(!is.null(chrom) && !is.character(chrom))
     stop('chrom has to be either NULL or an object of class character ..')
   if(!(mcClass %in% c('mCG','mCHG','mCHH', 'all')))
     stop('mcClass has to be one of mCG, mCHG, mCHH or all..')
+  if(!is.numeric(minC) && minC < 0 )
+    stop('minC has to be of class numeric and positive..')
+  if(!is.numeric(coverage))
+    stop('coverage has to be of class numeric ..')
+  if(!is.numeric(pval))
+    stop('pval has to be of class numeric ..')
+  if(pval > 1)
+    stop('pval has to be lower than 1 ..')
   if(!is.numeric(Nproc))
     stop('Nproc has to be of class numeric ..')
   
+  
   # parallelize tasks based on each chromosome
-  Methchr <- function(Ind, Blocks, samples, mcContext)
+  Methchr <- function(Ind, Blocks, samples, mcContext, mCs, cov, Pval)
   {
     resList <- list()
     Cposind <- NULL
@@ -397,8 +407,8 @@ setMethod('methstats', 'BSdataSet', function(object, chrom, mcClass='mCG', Nproc
     
     for(j in 1:length(samples)) {
       message('retreiving methylation data from sample.. ')
-      resList[[j]] <- mapBSdata2GRanges(GenoRanges= gr, Sample= samples[[j]], depth=0,
-                                        context= sub('m', '', mcContext))[[1]]
+      resList[[j]] <- mapBSdata2GRanges(GenoRanges= gr, Sample= samples[[j]], depth=cov,
+                                        context= sub('m', '', mcContext), mC=mCs, pValue=Pval)[[1]]
       if(!is(resList[[j]],"GRanges")) return(NULL)
       Cposind <- c(Cposind, start(resList[[j]]))    
     }
@@ -453,7 +463,7 @@ setMethod('methstats', 'BSdataSet', function(object, chrom, mcClass='mCG', Nproc
   cl <- makeCluster(Nproc, type='PSOCK')
   clRes <- clusterApplyLB(cl, 1:nrow(blocks),
                           Methchr, Blocks=blocks, samples=object, 
-                          mcContext=mcClass)
+                          mcContext=mcClass, mCs=minC, cov=coverage, Pval=pval)
   ind <- which(is.na(clRes)==TRUE)
   if(length(ind)!=0)
     clRes <- clRes[-c(ind)]
@@ -502,6 +512,7 @@ setMethod('methstats', 'BSdataSet', function(object, chrom, mcClass='mCG', Nproc
   {
     usr <- par("usr"); on.exit(par(usr))
     par(usr = c(usr[1:2], 0, 1.5) )
+    opar=par(ps=10)
     h <- hist(x, plot = FALSE)
     breaks <- h$breaks; nB <- length(breaks)
     y <- h$counts; y <- y/max(y)
@@ -509,7 +520,7 @@ setMethod('methstats', 'BSdataSet', function(object, chrom, mcClass='mCG', Nproc
   }
   
   pairs(mc_table,lower.panel=panel.smooth, upper.panel=panel.cor,diag.panel=panel.hist, 
-        main="Correlation Matrix")
+          cex.labels = 1,font.labels = 2,main="Correlation Matrix")
   ######### clustering plots ####
   
   clust_mat <- t(mc_table)
@@ -517,7 +528,6 @@ setMethod('methstats', 'BSdataSet', function(object, chrom, mcClass='mCG', Nproc
   x <- hclust(dist_mat)
   dev.new()
   plot(x, main="Methylation Clustering", xlab="Samples")
-  
   return(statistics_results)
 }
 )

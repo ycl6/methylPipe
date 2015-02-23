@@ -49,9 +49,9 @@ have to be assigned the same group name; if object has only two groups,
 \examples{
 require(BSgenome.Hsapiens.UCSC.hg18)
 uncov_GR <- GRanges(Rle('chr20'), IRanges(c(14350,69251,84185), c(18349,73250,88184)))
-H1data <- system.file('extdata', 'H1_chr20_CG_10k.gz', package='methylPipe')
+H1data <- system.file('extdata', 'H1_chr20_CG_10k_tabix_out.txt.gz', package='methylPipe')
 H1.db <- BSdata(file=H1data, uncov=uncov_GR, org=Hsapiens)
-IMR90data <- system.file('extdata', 'IMR90_chr20_CG_10k.gz', package='methylPipe')
+IMR90data <- system.file('extdata', 'IMR90_chr20_CG_10k_tabix_out.txt.gz', package='methylPipe')
 IMR90.db <- BSdata(file=IMR90data, uncov=uncov_GR, org=Hsapiens)
 H1.IMR90.set <- BSdataSet(org=Hsapiens, group=c("C","E"), IMR90=IMR90.db, H1=H1.db)
 }

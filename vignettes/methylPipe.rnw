@@ -119,20 +119,29 @@ as a \Rclass{GRanges} object. The function \Rfunction{meth.call} produces methyl
 and uncovered genomic regions file for each sample in the output folder. Finally, when profiling DNA methylation 
 unmethylated Cs are determined as those genomic cytosines not having any methylated reads and not belogning to uncovered genomic 
 regions. 
+<<methcall,message=FALSE,cache=TRUE>>=
+file_loc <- system.file('extdata', 'test_methcall', package='methylPipe')
+meth.call(files_location=file_loc, output_folder=tempdir(), no_overlap=TRUE, 
+          read.context="CpG", Nproc=1)
+@
 
 \Rpackage{methylPipe} adopts TABIX compressed indexing of flatfiles to reduce disk space which allows fast access.
 The \Rpackage{methylPipe} library includes a small subset of the first two base resolution human DNA methylomes 
 (Lister R et al Nature 2009) for two well known human cell lines: embryonic stem cells (H1) 
-and fetal lung fibroblasts (IMR90). The methylation data can be stored into \Rclass{BSdata} objects and then collected together within a \Rclass{BSdataSet} object with the following commands:
-<<met1,message=FALSE,cache=TRUE>>=
+and fetal lung fibroblasts (IMR90). The methylation data can be stored into \Rclass{BSdata} objects and then collected together within a \Rclass{BSdataSet} object. The \Rclass{BSprepare} command is not run in the following example since it requires a local copy of tabix software. Hence, for this example we use pre-generated tabix indexed files from \Rpackage{methylPipe} for H1 and IMR90.
+<<bsprepare,message=FALSE,cache=TRUE>>=
+file_loc <- system.file('extdata', 'H1_chr20_CG_10k.txt', package='methylPipe')
+#BSprepare(files_location=file_loc,output_folder=file_loc, tabix="/path-to-tabix/")
 uncov_GR <- GRanges(Rle('chr20'), IRanges(c(14350,69251,84185), c(18349,73250,88184)))
-H1data <- system.file('extdata', 'H1_chr20_CG_10k.gz', package='methylPipe')
+H1data <- system.file('extdata', 'H1_chr20_CG_10k_tabix_out.txt.gz', 
+                      package='methylPipe')
 H1.db <- BSdata(file=H1data, uncov=uncov_GR, org=Hsapiens)
 H1.db
 @
 Multiple \Rclass{BSdata} objects can be stored in \Rclass{BSdataSet} object by specifying group name for each sample either as "C" (control) or "E" (Experiment):
-<<met2,message=TRUE,cache=TRUE>>=
-IMR90data <- system.file('extdata', 'IMR90_chr20_CG_10k.gz', package='methylPipe')
+<<bsdataset,message=TRUE,cache=TRUE>>=
+IMR90data <- system.file('extdata', 'IMR90_chr20_CG_10k_tabix_out.txt.gz', 
+                         package='methylPipe')
 IMR90.db <- BSdata(file=IMR90data, uncov=uncov_GR, org=Hsapiens)
 H1.IMR90.set <- BSdataSet(org=Hsapiens, group=c("C","E"), IMR90=IMR90.db, H1=H1.db)
 H1.IMR90.set
@@ -147,7 +156,7 @@ loaded into the memory. The \Rmethod{mCsmoothing} method allow uploading into me
 DNA methylation data for a given genomic region and to display their methylation profile over it. The
 smoothing can be performed by either "sum" or "mean" of methylation level for each regions. 
 \begin{center}
-<<met3,fig.width=6,fig.height=5,out.width='.85\\textwidth',message=FALSE,cache=TRUE>>=
+<<met1,fig.width=6,fig.height=5,out.width='.85\\textwidth',message=FALSE,cache=TRUE>>=
 gr <- GRanges("chr20",IRanges(1,5e5))
 sres <- mCsmoothing(H1.db, gr, Scorefun='sum', Nbins=50, plot=TRUE)
 @
@@ -155,12 +164,13 @@ sres <- mCsmoothing(H1.db, gr, Scorefun='sum', Nbins=50, plot=TRUE)
 
 \section{Descriptive statistics of DNA methylation}
 
-\Rpackage{methylPipe} allows checking the basic stats about the methylation data such as range, mean and quantile distribution of methylation and assess sample similarity with correlation and clustering analysis. The \Rfunction{methstats} method computes pairwise correlation coefficients (Pearson) between the methylation profiles across all the samples in \Rclass{BSdataSet} object.This function plots scatter plot and correlation coefficients and also outputs a correlation matrix. In addition clustering of samples is performed based on the similarity of their methylation profiles. The function also outputs the dendrogram.
+\Rpackage{methylPipe} allows checking the basic stats about the methylation data such as range, mean and quantile distribution of methylation and assess sample similarity with correlation and clustering analysis. The \Rfunction{methstats} method computes pairwise correlation coefficients (Pearson) between the methylation profiles across all the samples in \Rclass{BSdataSet} object. It outputs scatter plot matrix of correlation coefficients. Finally, it performs (eucledian distance based) hierarchical clustering of samples and outputs the dendrogram. In the example below, the analysis is performed on \Rclass{BSdataSet} object of artificially replicated H1 and IMR90.
 \begin{center}
-<<met4,fig.width=6,fig.height=5,out.width='.85\\textwidth',message=FALSE,cache=TRUE>>=
+<<desstats,fig.width=6,fig.height=5,out.width='.85\\textwidth',message=FALSE, fig.keep="all",fig.show="asis",cache=TRUE>>=
 stats.set <- BSdataSet(org=Hsapiens, group=c("C","C","E","E"), IMR_1=IMR90.db, 
 IMR_2=IMR90.db, H1_1=H1.db,H1_2=H1.db)
-methstats(stats.set,chrom="chr20",mcClass='mCG', Nproc=1)
+stats_res <- methstats(stats.set,chrom="chr20",mcClass='mCG', Nproc=1)
+stats_res
 @
 \end{center}
 
@@ -175,7 +185,7 @@ The \Rfunction{mapBSdata2GRanges} method retrieves mC calls given a \Rclass{BSda
 a set of genomic regions. In the following example we will extract the CG sites for a set of genomic 
 regions. In particular we will consider a \Rclass{GRanges} object of genomic regions that spans 2Kb upstream
 and downstream the TSS of the transcript ids on the first 500Kb of chromosome 20: 
-<<met5,message=FALSE,cache=TRUE>>=
+<<met2,message=FALSE,cache=TRUE>>=
 gr_file <- system.file('extdata', 'GR_chr20.Rdata', package='methylPipe')
 load(gr_file)
 resmC <- mapBSdata2GRanges(GenoRanges=GR_chr20, Sample=H1.db, context='CG')
@@ -201,7 +211,7 @@ each bin of it, the absolute methylation density (mC/bp), the density of possibl
 (C/bp) and the relative methylation level (mC/C) will be determined. For example, in case of the 
 CG context: mCG/bp, CG/bp and mCG/CG densities will be stored for each bin of each genomic region in the 
 binmC, binC and binrC data slots, respectively.
-<<met6,message=FALSE,cache=TRUE>>=
+<<met3,message=FALSE,cache=TRUE>>=
 gec.H1 <- profileDNAmetBin(GenoRanges=GR_chr20, Sample=H1.db, mcCLASS='mCG', nbins=3)
 binmC(gec.H1)[4:5,]
 binC(gec.H1)[4:5,]

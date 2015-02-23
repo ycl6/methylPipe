@@ -53,7 +53,7 @@ mapBSdata2GRangesBin(GenoRanges, Sample, context='all', mC=1, depth=0, pValue=1,
 \examples{
 require(BSgenome.Hsapiens.UCSC.hg18)
 uncov_GR <- GRanges(Rle('chr20'), IRanges(c(14350,69251,84185), c(18349,73250,88184)))
-H1data <- system.file('extdata', 'H1_chr20_CG_10k.gz', package='methylPipe')
+H1data <- system.file('extdata', 'H1_chr20_CG_10k_tabix_out.txt.gz', package='methylPipe')
 H1.db <- BSdata(file=H1data, uncov=uncov_GR, org=Hsapiens)
 gr_file <- system.file('extdata', 'GR_chr20.Rdata', package='methylPipe')
 load(gr_file)

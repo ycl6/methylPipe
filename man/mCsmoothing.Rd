@@ -32,7 +32,7 @@ Context="CG", plot=TRUE)
 \examples{
 require(BSgenome.Hsapiens.UCSC.hg18)
 uncov_GR <- GRanges(Rle('chr20'), IRanges(c(14350,69251,84185), c(18349,73250,88184)))
-H1data <- system.file('extdata', 'H1_chr20_CG_10k.gz', package='methylPipe')
+H1data <- system.file('extdata', 'H1_chr20_CG_10k_tabix_out.txt.gz', package='methylPipe')
 H1.db <- BSdata(file=H1data, uncov=uncov_GR, org=Hsapiens)
 gr <- GRanges("chr20",IRanges(1,5e5))
 sres <- mCsmoothing(H1.db, gr, Scorefun='sum', Nbins=50, Context="CG", plot=TRUE)
