@@ -461,6 +461,7 @@ setMethod('methstats', 'BSdataSet', function(object, chrom, mcClass='mCG', minC=
     blocks <- splitChrs(chrs=Chrs, org=object@org)
   
   cl <- makeCluster(Nproc, type='PSOCK')
+  #clusterEvalQ(cl, library(GenomicRanges))
   clRes <- clusterApplyLB(cl, 1:nrow(blocks),
                           Methchr, Blocks=blocks, samples=object, 
                           mcContext=mcClass, mCs=minC, cov=coverage, Pval=pval)
@@ -470,8 +471,11 @@ setMethod('methstats', 'BSdataSet', function(object, chrom, mcClass='mCG', minC=
   if(length(clRes)==1)
     clRes <- clRes[[1]]
   else
-    clRes <- do.call("append",clRes)
-  
+  {
+    clRes_comb <- GRangesList(clRes)
+    clRes <- unlist(clRes_comb)
+    rm(clRes_comb)
+  }
   mc_table <- as.data.frame(mcols(clRes))
   rm(clRes)
   
