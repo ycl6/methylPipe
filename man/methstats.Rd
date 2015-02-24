@@ -14,7 +14,7 @@
 \arguments{
   \item{object}{An object of class \link{BSdataSet}}
   \item{chrom}{character; either NULL or an object of class character}
-  \item{MCClass}{character; the mC sequence context to be considered,
+  \item{mcClass}{character; the mC sequence context to be considered,
     one of all, mCG, mCHG or mCHH}
   \item{minC}{numeric; the minumum number of reads with C (DNA-methylation
     events) at a given cytosine genomic position}
