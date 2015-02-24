@@ -12,7 +12,7 @@ importFrom(gplots, heatmap.2)
 importFrom(BiocGenerics,rbind, width, strand, "strand<-", as.data.frame, unlist)
 importFrom(parallel, makeCluster)
 importFrom(data.table,fread)
-importFrom(GenomicRanges,GRanges, coverage, rowData,  assays)
+importFrom(GenomicRanges,GRanges, GRangesList, coverage, rowData, assays)
 importFrom(GenomeInfoDb,seqlengths,"seqlengths<-",seqnames)
 
 importMethodsFrom(BiocGenerics, clusterApplyLB, clusterEvalQ)
