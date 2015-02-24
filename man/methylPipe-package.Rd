@@ -8,8 +8,8 @@
 \tabular{ll}{
 Package: \tab methylPipe\cr
 Type: \tab Package\cr
-Version: \tab 0.99\cr
-Date: \tab 2014-06-17\cr
+Version: \tab 1.0.4 \cr
+Date: \tab 2015-02-24 \cr
 License: \tab GPL\cr
 Depends: \tab methods\cr
 }
