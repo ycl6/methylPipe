@@ -779,7 +779,7 @@ profileDNAmetBinParallel <- function(GenoRanges, Sample, mcCLASS='mCG',
     chrcomb <- NULL
     chrcomb <- do.call("rbind", clRes)
     Object <- new("GEcollection", SummarizedExperiment(assays=assays(chrcomb),
-                                                       rowData(chrcomb)))
+                                                       rowRanges(chrcomb)))
     Object
 }
 
@@ -872,23 +872,23 @@ plotMeth <- function(grl, colors=NULL, datatype, yLim, brmeth=NULL, mcContext="C
     for (i in 1:length(grl))
         {
             if(datatype[i] == 'mC') {
-                refgr <- rowData(grl[[i]])
+                refgr <- rowRanges(grl[[i]])
                 matlist[[i]] <- t(binmC(grl[[i]]))
             }
             if(datatype[i] == 'C') {
-                refgr <- rowData(grl[[i]])
+                refgr <- rowRanges(grl[[i]])
                 matlist[[i]] <- t(binC(grl[[i]]))
             }
             if(datatype[i] == 'rC') {
-                refgr <- rowData(grl[[i]])
+                refgr <- rowRanges(grl[[i]])
                 matlist[[i]] <- t(binrC(grl[[i]]))
             }
             if(datatype[i] == 'density') {
-                refgr <- rowData(grl[[i]])
+                refgr <- rowRanges(grl[[i]])
                 matlist[[i]] <- t(binscore(grl[[i]]))
             }
             if(datatype[i] == 'cols') {
-                refgr <- rowData(grl[[i]])
+                refgr <- rowRanges(grl[[i]])
                 matlist[[i]] <- t(as.matrix(mcols(grl[[i]])[1]))
             }
             if(datatype[i] == 'gr') {

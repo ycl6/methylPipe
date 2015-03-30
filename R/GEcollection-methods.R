@@ -43,13 +43,13 @@ setMethod('nbins', 'GEcollection', function(object)
 
                                         # length
 setMethod('length', 'GEcollection', function(x)
-          length(rowData(x)))
+          length(rowRanges(x)))
 
                                         # show
 setMethod('show', 'GEcollection', function(object) {
     cat("S4 Object of class GEcollection; ")
     message()
-    print(rowData(object))
+    print(rowRanges(object))
     cat("\nbinmC : ")
     if(!is.null(assays(object)[["binmC"]])) cat('ok')
     else cat('NA')
