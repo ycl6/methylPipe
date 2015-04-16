@@ -1,0 +1,283 @@
+%\VignetteIndexEntry{methylPipe}
+%\VignetteEngine{knitr::knitr}
+%\VignetteKeywords{methylation, epigenetics}
+%\VignetteDepends{methylPipe}
+%\VignettePackage{methylPipe}
+
+\documentclass[11pt]{article}
+\usepackage[margin=2cm,nohead]{geometry}
+
+\usepackage{hyperref}
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+
+
+\newcommand{\software}[1]{\textsf{#1}}
+\newcommand{\R}{\software{R}}
+\newcommand{\Bioconductor}{\software{Bioconductor}}
+\newcommand{\methylPipe}{\Rpackage{methylPipe}}
+
+\title{methylPipe}
+\author{Kamal Kishore, Mattia Pelizzola}
+
+\begin{document}
+
+
+\maketitle
+<<options,echo=FALSE>>=
+options(width=72)
+@
+
+\tableofcontents
+
+
+
+\section{Introduction} 
+In this document you can find a brief tutorial on the \textbf{\Rpackage{methylPipe}} package 
+for the analysis of base-pair resolution DNA methylation data. DNA methylation is a 
+potentially heritable epigenetic modification of the genomic DNA typical of most 
+eukaryotic organisms and critical for the regulation of gene transcription. 
+The level of DNA methylation varies according to age, diet and environment and 
+an appropriate control of methylation patterns is important for the onset of 
+cellular differentiation processes and can be deregulated in diseases as cancer. 
+In eukaryotic genomes the methyl group can be added to Cytosines in the CG, CHG 
+and CHH sequence context (H being one of A, C or T). It is nowadays possible to 
+generate genome-wide base-pair resolution DNA methylation 
+maps (see Lister R et al Nature 2009). \textbf{\Rpackage{methylPipe}} is an R package that 
+includes a series of objects and methods for a memory efficient 
+management, query, analysis and visualization of DNA methylation data and their 
+integration with heterogeneous data types. This package has been developed alongwith 
+\textbf{\Rpackage{compEpiTools}} which provide functions and methods for the analysis
+of epigenomics data. The data package \textbf{\Rpackage{ListerEtAlBSseq}} has also been
+developed which consists of base resolution Bisulfite sequencing data of H1 and IMR90 
+cell line (Lister R et al Nature 2009). 
+
+The overview section of this document will briefly walk you through the main 
+available functionalities, while the following sections will provide 
+additional details on a selection of available classes and methods. 
+
+\section{Quick overview}
+A number of \textbf{classes} are defined in \Rpackage{methylPipe}: \Rclass{BSdata}, 
+\Rclass{BSdataSet}, \Rclass{GEcollection} and \Rclass{GElist}.
+\begin{itemize}
+\item \textbf{\Rclass{BSdata}} is a reference class to store base resolution DNA methylation data generated 
+from a high-thoughput sequencing experiment for a given biological sample.
+\item The \textbf{\Rclass{BSdataSet}} class allows combining DNA methylation data for several 
+samples for the same organism.
+\item The \textbf{\Rclass{GEcollection}} class is used to store the DNA methylation status 
+of a collection of genomic regions.
+\item The \textbf{\Rclass{GElist}} class is the list of multiple objects of class \Rclass{GEcollection}. 
+\end{itemize}
+
+
+\textbf{\Rpackage{methylPipe}} consists of methods which allows analysis and visualisation of 
+genome wide DNA methylation data. The \Rfunction{meth.call} function processes methylation 
+information from aligned files and creates tabular data file. \Rfunction{BSprepare} processes 
+and tabix compresses such tabular data files for creation of a \Rclass{BSdata} object for each sample.  
+The \Rclass{BSdataSet} classe stores multiple such samples of class \Rclass{BSdata}.
+The \Rmethod{mCsmoothing} methods extracts DNA methylation data for a given genomic region
+and smooths/plots it.   
+
+For methylation analysis on your regions of interest \Rclass{GEcollection} 
+and \Rclass{GElist} acts as a repository of methylation data across various genomic ranges. 
+\Rfunction{getCpos} and \Rfunction{getCposDensity} retrieves all potential genomic cytosine positions 
+and their density across genomic regions, repectively. \Rfunction{mapBSdata2GRanges} 
+allows extraction of DNA methylation information across multiple genomic ranges and 
+\Rfunction{profileDNAmetBin} determines the absolute and relative methylation to create
+a \Rclass{GEcollection} object. Different methods for the detection of differentially methylated 
+regions are implemented, according to the number of samples (see \Rmethod{findDMR} and 
+\Rfunction{consolidateDMRs}). In addition the methylation profile can be visualised using \Rfunction{plotMeth}. 
+Morover, integrative analysis with other epignomics dataset can be performed by using \Rfunction{heatmapdata}, 
+\Rfunction{heatmapPlot} functions of the package \textbf{\Rpackage{compEpiTools}}.
+
+The methods that are most demanding in terms of computational resources are optimized for
+low memory fingerprint and multi-processor support. \Rpackage{methylPipe} includes a 
+series of objects and methods that can be used as building blocks for the creation of 
+pipelines for the data analysis of epigenomics data, with particular emphasis on DNA 
+methylation, and their integration with any kind of annotation or additional data type.
+
+\section{Profiling Genome wide DNA methylation}
+First of all the \Rpackage{methylPipe} and the genome sequence libraries are loaded:
+<<mpload,message=FALSE,cache=TRUE>>=
+library(methylPipe)
+library(BSgenome.Hsapiens.UCSC.hg18)
+@
+The DNA methylation information can be read from a text file. See the documentation of 
+the \Rfunction{BSprepare} on how to build data suitable to populate a \Rclass{BSdata} object. 
+Moreover, the methylation information can also be read directly from the sorted SAM file(s) 
+generated from the BISMARK aligner. The function \Rfunction{meth.call} process the sorted 
+SAM file. The user can specify the sequence context in which the methylation information is read from these files 
+either "CpG" or "All". In case of whole genome Bisulfite data especially in case of non-CG methylation the 
+number of potential methylation sites are enormous and vast majority of them are unmethylated.
+In order to avoid storing too much data while maintaining the ability to identify 
+methylated, unmethylated and uncovered Cytosines, \Rpackage{methylPipe} only stores and access 
+C positions with at least 1 mC read. Genomic regions not covered by sequencing are stored
+as a \Rclass{GRanges} object. The function \Rfunction{meth.call} produces methylation call text file 
+and uncovered genomic regions file for each sample in the output folder. Finally, when profiling DNA methylation 
+unmethylated Cs are determined as those genomic cytosines not having any methylated reads and not belogning to uncovered genomic 
+regions. 
+<<methcall,message=FALSE,cache=TRUE>>=
+file_loc <- system.file('extdata', 'test_methcall', package='methylPipe')
+meth.call(files_location=file_loc, output_folder=tempdir(), no_overlap=TRUE, 
+          read.context="CpG", Nproc=1)
+@
+
+\Rpackage{methylPipe} adopts TABIX compressed indexing of flatfiles to reduce disk space which allows fast access.
+The \Rpackage{methylPipe} library includes a small subset of the first two base resolution human DNA methylomes 
+(Lister R et al Nature 2009) for two well known human cell lines: embryonic stem cells (H1) 
+and fetal lung fibroblasts (IMR90). The methylation data can be stored into \Rclass{BSdata} objects and then collected together within a \Rclass{BSdataSet} object. The \Rclass{BSprepare} command is not run in the following example since it requires a local copy of tabix software. Hence, for this example we use pre-generated tabix indexed files from \Rpackage{methylPipe} for H1 and IMR90.
+<<bsprepare,message=FALSE,cache=TRUE>>=
+file_loc <- system.file('extdata', 'H1_chr20_CG_10k.txt', package='methylPipe')
+#BSprepare(files_location=file_loc,output_folder=file_loc, tabix="/path-to-tabix/")
+uncov_GR <- GRanges(Rle('chr20'), IRanges(c(14350,69251,84185), c(18349,73250,88184)))
+H1data <- system.file('extdata', 'H1_chr20_CG_10k_tabix_out.txt.gz', 
+                      package='methylPipe')
+H1.db <- BSdata(file=H1data, uncov=uncov_GR, org=Hsapiens)
+H1.db
+@
+Multiple \Rclass{BSdata} objects can be stored in \Rclass{BSdataSet} object by specifying group name for each sample either as "C" (control) or "E" (Experiment):
+<<bsdataset,message=TRUE,cache=TRUE>>=
+IMR90data <- system.file('extdata', 'IMR90_chr20_CG_10k_tabix_out.txt.gz', 
+                         package='methylPipe')
+IMR90.db <- BSdata(file=IMR90data, uncov=uncov_GR, org=Hsapiens)
+H1.IMR90.set <- BSdataSet(org=Hsapiens, group=c("C","E"), IMR90=IMR90.db, H1=H1.db)
+H1.IMR90.set
+@
+
+The data includes the chromosome, the genomic position, strand and sequence context for each 
+methylCytosine (mC). In addition, for each mC the number of reads with C at that genomic 
+position and strand (supporting DNA methylation), the number of reads with T (evidence of an 
+unmethylated C) and the binomial p-value supporting the mC call are attached.
+Importantly, these data are referenced into the \Rclass{BSdata} but they are not actually 
+loaded into the memory. The \Rmethod{mCsmoothing} method allow uploading into memory the 
+DNA methylation data for a given genomic region and to display their methylation profile over it. The
+smoothing can be performed by either "sum" or "mean" of methylation level for each regions. 
+\begin{center}
+<<met1,fig.width=6,fig.height=5,out.width='.85\\textwidth',message=FALSE,cache=TRUE>>=
+gr <- GRanges("chr20",IRanges(1,5e5))
+sres <- mCsmoothing(H1.db, gr, Scorefun='sum', Nbins=50, plot=TRUE)
+@
+\end{center}
+
+\section{Descriptive statistics of DNA methylation}
+
+\Rpackage{methylPipe} allows checking the basic stats about the methylation data such as range, mean and quantile distribution of methylation and assess sample similarity with correlation and clustering analysis. The \Rfunction{methstats} method computes pairwise correlation coefficients (Pearson) between the methylation profiles across all the samples in \Rclass{BSdataSet} object. It outputs scatter plot matrix of correlation coefficients. Finally, it performs (eucledian distance based) hierarchical clustering of samples and outputs the dendrogram. In the example below, the analysis is performed on \Rclass{BSdataSet} object of artificially replicated H1 and IMR90.
+\begin{center}
+<<desstats,fig.width=6,fig.height=5,out.width='.85\\textwidth',message=FALSE, fig.keep="all",fig.show="asis",cache=TRUE>>=
+stats.set <- BSdataSet(org=Hsapiens, group=c("C","C","E","E"), IMR_1=IMR90.db, 
+IMR_2=IMR90.db, H1_1=H1.db,H1_2=H1.db)
+stats_res <- methstats(stats.set,chrom="chr20",mcClass='mCG', Nproc=1)
+stats_res
+@
+\end{center}
+
+\section{Profiling DNA methylation on genomic ranges}
+
+\Rpackage{methylPipe} allows profiling DNA methylation over a set of genomic regions and determining 
+their absolute or relative methylation profiles. Absolute methylation is here defined as the genomic 
+density of mC calls per bp, while relative methylation is the proportion of density of methylated 
+genomic sites over the density of potential methylation sites.
+
+The \Rfunction{mapBSdata2GRanges} method retrieves mC calls given a \Rclass{BSdata} object of a sample and 
+a set of genomic regions. In the following example we will extract the CG sites for a set of genomic 
+regions. In particular we will consider a \Rclass{GRanges} object of genomic regions that spans 2Kb upstream
+and downstream the TSS of the transcript ids on the first 500Kb of chromosome 20: 
+<<met2,message=FALSE,cache=TRUE>>=
+gr_file <- system.file('extdata', 'GR_chr20.Rdata', package='methylPipe')
+load(gr_file)
+resmC <- mapBSdata2GRanges(GenoRanges=GR_chr20, Sample=H1.db, context='CG')
+head(resmC[[4]])
+@
+To profile DNA methylation on genomic regions of interest the \Rclass{GEcollection} class 
+(collection of genomic regions) is used. These genomic regions can be any regions of interest
+such as one or more gene loci, promoter regions, a set of transcription factor binding sites, 
+a set of regions enriched by some histone mark or a set of transposable elements. Most of 
+these regions can be usually retrieved from either publications or public databases like 
+the UCSC Genome Browser and its Table Browser tools (see \Rpackage{compEpiTools} for methods 
+for generation/manipulation of these regions). The \Rclass{GEcollection} class has 
+data slots and methods tailored for storing and analyzing DNA methylation data. 
+It is an extension of \Rclass{SummarizedExperiment} class of \Rclass{GenomicRanges} package. 
+
+For the creation of the \Rclass{GEcollection}, the \Rfunction{getCpos} and \Rfunction{mapBSdata2GRanges} 
+methods are called automatically to populate its various data slots. Further arguments of 
+the latter function allows to filter the mC sites based on the depth of sequencing, number
+of reads with C at that genomic position and their binomial p-value. The \Rfunction{profileDNAmetBin} 
+method acts as a wrapper for these methods to profile absolute and relative DNA methylation for a 
+set of regions within a \Rclass{GEcollection}. In particular for each genomic region, and possibly
+each bin of it, the absolute methylation density (mC/bp), the density of possible methylation sites 
+(C/bp) and the relative methylation level (mC/C) will be determined. For example, in case of the 
+CG context: mCG/bp, CG/bp and mCG/CG densities will be stored for each bin of each genomic region in the 
+binmC, binC and binrC data slots, respectively.
+<<met3,message=FALSE,cache=TRUE>>=
+gec.H1 <- profileDNAmetBin(GenoRanges=GR_chr20, Sample=H1.db, mcCLASS='mCG', nbins=3)
+binmC(gec.H1)[4:5,]
+binC(gec.H1)[4:5,]
+binrC(gec.H1)[4:5,]
+@
+\Rclass{GEcollection} objects can be \textbf{subsetted and combined}. Subset can be useful to
+work only on the regions on a particular strand and/or chromosome or chromosomal region.
+<<subset,message=FALSE,cache=TRUE>>=
+gec1 <- gec.H1[start(gec.H1) < 153924]
+gec2 <- gec.H1[start(gec.H1) > 153924]
+@
+Multiple \Rclass{GEcollection} objects can be saved into a \Rclass{GElist} object. This can be 
+convenient if there are many of them and if one would like to iteratively apply 
+the same method to them, for example profiling DNA methylation for their genomic regions in the same sample.
+<<gecset,message=FALSE,cache=TRUE>>=
+gecIMR_file <- system.file('extdata', 'gec.IMR90.Rdata', package='methylPipe')
+load(gecIMR_file)
+gel <- GElist(gecIMR90=gec.IMR90, gecH1=gec.H1)
+print(names(gel))
+@
+The \Rclass{GElist} objects can be visualized using \Rfunction{plotMeth}. This allows methylation data of 
+various samples to be displayed together with the annotation information for the genomic regions of interest. 
+Morover, various epigenomics data tracks can also be visualized together with the methylation information. 
+See the documentation of the \Rfunction{plotMeth} for more details.
+<<pmeth,fig.width=5,fig.height=5,out.width='.85\\textwidth',message=FALSE,cache=TRUE>>=
+library(TxDb.Hsapiens.UCSC.hg18.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg18.knownGene
+gel <- GElist(gecIMR90=gec.IMR90[1:10], gecH1=gec.H1[1:10])
+plotMeth(gel, datatype=c("mC","mC"), yLim=c(.025, .025), brmeth=H1.IMR90.set,
+         mcContext="CG", Datatrackname=c("Abs meth","Abs meth","H1","IMR90"), 
+         transcriptDB=txdb, chr="chr20", org=Hsapiens)
+@
+
+\section{Differential DNA methylation}
+The \Rmethod{findDMR} function can be used to identify differentially methylated regions 
+(DMRs) for any sequence context (mCG, mCHG or mCHH). DMRs can be identified 
+comparing the mC methylation levels (the proportion of methylated over total reads for a set of mC) 
+between \textbf{two samples} or within a group of \textbf{N samples}, with the Wilcoxon or the 
+Kruskal-Wallis non parametric test, respectively. Only cytosine positions covered in both the 
+samples (pairwise analysis) or all the samples (multiple sample analysis) are considered for 
+DMR identification. The algorithm uses dynamic sliding window approach which identifies DMRs
+depending on methylated cytosine frequency and their relative distance. Moreover, to perform regions
+specific analysis (such as promoter or CpG island centric) genomic regions could be specified 
+and the alogirithm will report DMRs only within those regions, if any. In a first step, all the evaluated
+regions are reported in the output with their corresponding statistical significance. The methylation difference 
+is determined in terms of MethDiffPerc (percentage difference between the mean methylation of experiment and control) 
+and log2Enrichment (log2 of mean methylation of experiment over control).
+<<dmr1,message=FALSE,cache=TRUE>>=
+DMRs <- findDMR(object= H1.IMR90.set, Nproc=1, ROI=GR_chr20, MCClass='mCG',
+     dmrSize=6, dmrBp=800)
+head(DMRs)
+@
+The \Rfunction{consolidateDMRs} function can be used to multiple-testing correct the DMRs and consolidate them according 
+to their relative distance, type of DMRs and thresholds of p-value/Methylation difference/log enrichment. A final 
+\Rclass{GRanges} object with the set of DMRs including p-value, methylation difference and log enrichment is provided:
+<<dmr2,message=FALSE,cache=TRUE>>=
+hyper.DMRs.conso <- consolidateDMRs(DmrGR=DMRs, pvThr=0.05, GAP=100, type="hyper")
+hyper.DMRs.conso[1:4]
+@
+
+
+\newpage
+\section{Session Information}
+<<info,echo=TRUE>>=
+sessionInfo()
+@
+
+\end{document}
+
