@@ -787,152 +787,138 @@ profileDNAmetBinParallel <- function(GenoRanges, Sample, mcCLASS='mCG',
 
                                   # function to plot gene locus visualization with methylation/omics data
 
-plotMeth <- function(grl, colors=NULL, datatype, yLim, brmeth=NULL, mcContext="CG", annodata=NULL, Datatrackname,
-                     transcriptDB, chr, start=NULL, end=NULL, org){
-    if(!is(grl,'list') && !is(grl,'GElist'))
-        stop('grl has to be of class list or GElist...')
+plotMeth <- function(grl=NULL, colors=NULL, datatype=NULL, yLim, brmeth=NULL, mcContext="CG", annodata=NULL, 
+                     transcriptDB, chr, start, end, org){
+    if(!is.null(grl) && !is(grl,'list') && !is(grl,'GElist'))
+        stop('grl has to be either NULL or an object of class list or GElist...')
     if(is(grl,'list'))
         {
             if(any(!(sapply(grl, class) %in% c("GRanges", 'GEcollection'))))
-                stop('grl has to be a list of either GRanges or GEcollection objects...')
+                stop('grl has to be a list of either GRanges or GEcollection object...')
         }
+    if(!is.null(brmeth) && !is(brmeth,'list'))
+      stop('brmeth has to be either NULL or of class list ...')
+    if(is(brmeth,'list'))
+    {
+      if(any(!(sapply(brmeth, class) %in% c("BSdata"))))
+        stop('grl has to be a list of BSdata object...')
+    }
+    if(is.null(grl) && is.null(brmeth))
+      stop('both grl and brmeth cannot be NULL...')
     if(!is.null(colors) && !is.character(colors))
       stop('colors has to be either NULL or of class character ...')
-    if(is.character(colors))
+    
+    if(!is.null(grl))
     {
-      if(length(colors) != length(grl))
-        stop('length of colors has to be same as length of grl ...')
+      if(is.null(names(grl)))
+        stop('names of grl cannot be NULL...')
+      if(is.null(datatype))
+        stop('datatype cannot be NULL when grl is defined and has to be of length equal to grl...')
+      if(is.character(colors))
+      {
+        if(length(colors) != length(grl))
+          stop('length of colors has to be same as length of grl ...')
+      }
+      if(!is.numeric(yLim))
+        stop('yLim has to be of class numeric ..')
+      if(!is.null(datatype))
+      {
+        for(i in 1:length(datatype)) {
+          dti <- datatype[i]
+          if(!(dti %in% c('density', 'C','mC', 'rC','cols')))
+            stop('datatype has to be an array containing
+           one of: density, C, mC, rC, cols')
+        }
+        if(length(datatype) != length(grl) && length(grl) != length(yLim))
+          stop('grl, datatype and yLim has to be of same length ..')
+      }
     }
-    for(i in 1:length(datatype)) {
-      dti <- datatype[i]
-      if(!(dti %in% c('density', 'C','mC', 'rC','cols', 'gr')))
-        stop('datatype has to be an array containing
-           one of: density, C, mC, rC, cols or gr')
-    }
-    if(!is.numeric(yLim))
-      stop('yLim has to be of class numeric ..')
-    if(!is.null(brmeth) && !is(brmeth,'BSdataSet'))
-      stop('brmeth has to be either NULL or of class BSdataSet ...')
+    
     if(length(which(!(mcContext %in% c('CG','CHG','CHH')))) > 0)
       stop('mcContext has to be one of CG, CHG, and CHH ..')
     if(!is.null(annodata) && !is(annodata,'GRangesList'))
       stop('annodata has to be either NULL or of class GRangesList ...')
-    if(!is.character(Datatrackname))
-      stop('Datatrackname has to be of class character ...')
-    if(!is.null(annodata) && !is.null(brmeth))
-    {
-      if(length(Datatrackname) != length(grl)+length(annodata)+length(brmeth))
-        stop('Datatrackname has to be equal to length of grl, brmeth and annodata...')
-      grl_trackname <- Datatrackname[1:length(grl)]
-      brmeth_trackname <- Datatrackname[length(grl)+1:length(brmeth)]
-      anno_trackname <- Datatrackname[length(grl)+length(brmeth)+1:length(annodata)]
-    }
-    else
-    {
-      if(!is.null(brmeth))
-      {
-        if(length(Datatrackname) != length(grl)+length(brmeth))
-          stop('Datatrackname has to be equal to length of grl and brmeth')
-        grl_trackname <- Datatrackname[1:length(grl)]
-        brmeth_trackname <- Datatrackname[length(grl)+1:length(brmeth)]
-      }
-      if(!is.null(annodata))
-      {
-        if(length(Datatrackname) != length(grl)+length(annodata))
-          stop('Datatrackname has to be equal to length of grl and annodata...')
-        grl_trackname <- Datatrackname[1:length(grl)]
-        anno_trackname <- Datatrackname[length(grl)+1:length(annodata)]
-      }
-      if(is.null(annodata) && is.null(brmeth))
-      {
-        if(length(Datatrackname) != length(grl))
-          stop('Datatrackname has to be equal to length of grl...')
-        grl_trackname <- Datatrackname[1:length(grl)]
-      }
-    }
-
-    if(length(datatype) != length(grl) && length(grl) != length(yLim))
-      stop('grl, datatype and yLim has to be of same length ..')
     if(!is(transcriptDB,"TxDb") && !is.null(transcriptDB))
         stop('transcriptDB has to be either NULL or an object of class TxDb ..')
     if(!is.character(chr))
         stop('chr has to be of class character ..')
-    if(!is.null(start) && !is.numeric(start))
-      stop('start has to be of either NULL or of class numeric ..')
-    if(!is.null(end) && !is.numeric(end))
-        stop('end has to be of either NULL or of class numeric ..')
+    if(!is.numeric(start))
+      stop('start has to be of class numeric ..')
+    if(!is.numeric(end))
+        stop('end has to be of class numeric ..')
     if(!is(org, "BSgenome"))
       stop('org has to be of class BSgenome ..')
-
+    
     gen <- org@provider_version
     itrack <- IdeogramTrack(genome = gen, chromosome = chr)
     axisTrack <- GenomeAxisTrack()
-    matlist <- list()
-    dTrack <- list()
-    for (i in 1:length(grl))
-        {
-            if(datatype[i] == 'mC') {
-                refgr <- rowRanges(grl[[i]])
-                matlist[[i]] <- t(binmC(grl[[i]]))
-            }
-            if(datatype[i] == 'C') {
-                refgr <- rowRanges(grl[[i]])
-                matlist[[i]] <- t(binC(grl[[i]]))
-            }
-            if(datatype[i] == 'rC') {
-                refgr <- rowRanges(grl[[i]])
-                matlist[[i]] <- t(binrC(grl[[i]]))
-            }
-            if(datatype[i] == 'density') {
-                refgr <- rowRanges(grl[[i]])
-                matlist[[i]] <- t(binscore(grl[[i]]))
-            }
-            if(datatype[i] == 'cols') {
-                refgr <- rowRanges(grl[[i]])
-                matlist[[i]] <- t(as.matrix(mcols(grl[[i]])[1]))
-            }
-            if(datatype[i] == 'gr') {
-              refgr <- grl[[i]]
-              matlist[[i]] <- t(as.matrix(mcols(grl[[i]])[1]))
-            }
-            if(is.null(colors))
-              dTrack[[i]] <- DataTrack(range=refgr, data=matlist[[i]] , name=grl_trackname[i], chromosome=chr,
-                                     fill="darkgreen", ylim=c(0, yLim[i]))
-            else
-              dTrack[[i]] <- DataTrack(range=refgr, data=matlist[[i]] , name=grl_trackname[i], chromosome=chr,
-                                       fill=colors[i], ylim=c(0, yLim[i]))
-        }
-
-    if(!is.null(start) && !is.null(end))
+    dTrack <- NULL
+    brTrack <- NULL 
+    AnnoTrack <- NULL 
+    txTrack <- NULL
+    
+    if(!is.null(grl))
     {
-      brmeth_gr <- GRanges(chr,IRanges(start,end))
-      if(abs(start-end) < 50)
+      matlist <- list()
+      dTrack <- list()
+      for (i in 1:length(grl))
       {
-        strack <- SequenceTrack(org)
-        anntrack <- list(itrack, axisTrack, strack)
+        grl_trackname <- names(grl)
+        if(datatype[i] == 'mC') {
+          refgr <- rowRanges(grl[[i]])
+          matlist[[i]] <- t(apply(binmC(grl[[i]]),1,mean))
+        }
+        if(datatype[i] == 'C') {
+          refgr <- rowRanges(grl[[i]])
+          matlist[[i]] <- t(apply(binC(grl[[i]]),1,mean))
+        }
+        if(datatype[i] == 'rC') {
+          refgr <- rowRanges(grl[[i]])
+          matlist[[i]] <- t(apply(binrC(grl[[i]]),1,mean))
+        }
+        if(datatype[i] == 'density') {
+          refgr <- rowRanges(grl[[i]])
+          matlist[[i]] <- t(apply(binscore(grl[[i]]),1,mean))
+        }
+        if(datatype[i] == 'cols') {
+          refgr <- rowRanges(grl[[i]])
+          matlist[[i]] <- t(as.matrix(mcols(grl[[i]])[1]))
+        }
+        if(is.null(colors))
+          dTrack[[i]] <- DataTrack(range=refgr, data=matlist[[i]] , name=grl_trackname[i], chromosome=chr,
+                                   fill="darkgreen", ylim=c(0, yLim[i]))
+        else
+          dTrack[[i]] <- DataTrack(range=refgr, data=matlist[[i]] , name=grl_trackname[i], chromosome=chr,
+                                   fill=colors[i], ylim=c(0, yLim[i]))
       }
-      else
-        anntrack <- list(itrack, axisTrack)
+    }
+    
+    brmeth_gr <- GRanges(chr,IRanges(start,end))
+    if(abs(start-end) < 50){
+      strack <- SequenceTrack(org)
+      anntrack <- list(itrack, axisTrack, strack)
     }
     else
-    {
-      start <- min(start(refgr[seqnames(refgr)==chr,]))
-      end <- max(end(refgr[seqnames(refgr)==chr,]))
       anntrack <- list(itrack, axisTrack)
-      brmeth_gr <- GRanges(chr,IRanges(start,end))
-    }
 
-
-    brTrack <- list()
-    bsdat <- NULL
-    brlist <- list()
-    plotype_length <- length(grl)
+    if(!is.null(grl))
+      plotype_length <- length(grl)
+    else
+      plotype_length <- 0
     if(!is.null(brmeth))
     {
+      brTrack <- list()
+      bsdat <- NULL
+      brlist <- list()
+      if(is.null(names(brmeth)))
+        stop('names of brmeth cannot be NULL...')
+      brmeth_trackname <- names(brmeth)
       for (i in 1:length(brmeth))
       {
         bsdat[i] <- unlist(mapBSdata2GRanges(GenoRanges=brmeth_gr, Sample= brmeth[[i]],
                                       context=mcContext))
+        if(is.na(bsdat[i]))
+          stop('This genomic range does not have any base resolution methylation data ..')
         mc <- mcols(bsdat[[i]])$C/(mcols(bsdat[[i]])$C+ mcols(bsdat[[i]])$T)
         mc <- as.matrix(mc)
         temp_gr <- bsdat[[i]]
@@ -946,9 +932,12 @@ plotMeth <- function(grl, colors=NULL, datatype, yLim, brmeth=NULL, mcContext="C
     plottype <- rep("histogram", plotype_length)
 #### adding annotation track
 
-    AnnoTrack <- list()
     if(!is.null(annodata))
     {
+      AnnoTrack <- list()
+      if(is.null(names(annodata)))
+        stop('names of annodata cannot be NULL...')
+      anno_trackname <- names(annodata)
       col <- rainbow(length(annodata))
       for (i in 1:length(annodata))
       {
@@ -961,10 +950,9 @@ plotMeth <- function(grl, colors=NULL, datatype, yLim, brmeth=NULL, mcContext="C
     	txdb <- transcriptDB
     	txTrack <- GeneRegionTrack(txdb, chromosome=chr, name="Transcripts", showId=TRUE,
     	                           geneSymbol=TRUE, background.panel = "#FFFEDB", background.title = "brown")
-    	combtrack <- c(anntrack, dTrack, brTrack, AnnoTrack, txTrack)
-     }
-    else combtrack <- c(anntrack, dTrack, brTrack, AnnoTrack)
-
+    }
+    
+    combtrack <- c(anntrack, dTrack, brTrack, AnnoTrack, txTrack)
     plotTracks(combtrack, type=plottype, chromosome=chr, from=start, to=end,
                reverseStrand = FALSE, background.panel = "#FFFEDB", background.title = "brown", col="black")
 }
