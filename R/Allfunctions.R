@@ -834,8 +834,8 @@ plotMeth <- function(grl=NULL, colors=NULL, datatype=NULL, yLim, brmeth=NULL, mc
       }
     }
     
-    if(length(which(!(mcContext %in% c('CG','CHG','CHH')))) > 0)
-      stop('mcContext has to be one of CG, CHG, and CHH ..')
+    if(length(which(!(mcContext %in% c('all','CG','CHG','CHH')))) > 0)
+      stop('mcContext has to be one of all, CG, CHG, and CHH ..')
     if(!is.null(annodata) && !is(annodata,'GRangesList'))
       stop('annodata has to be either NULL or of class GRangesList ...')
     if(!is(transcriptDB,"TxDb") && !is.null(transcriptDB))
@@ -881,7 +881,7 @@ plotMeth <- function(grl=NULL, colors=NULL, datatype=NULL, yLim, brmeth=NULL, mc
           matlist[[i]] <- t(apply(binscore(grl[[i]]),1,mean))
         }
         if(datatype[i] == 'cols') {
-          refgr <- rowRanges(grl[[i]])
+          refgr <- grl[[i]]
           matlist[[i]] <- t(as.matrix(mcols(grl[[i]])[1]))
         }
         if(is.null(colors))
@@ -918,7 +918,7 @@ plotMeth <- function(grl=NULL, colors=NULL, datatype=NULL, yLim, brmeth=NULL, mc
         bsdat[i] <- unlist(mapBSdata2GRanges(GenoRanges=brmeth_gr, Sample= brmeth[[i]],
                                       context=mcContext))
         if(is.na(bsdat[i]))
-          stop('This genomic range does not have any base resolution methylation data ..')
+          stop('This genomic range does not have any base resolution methylation data for the given sequence context..')
         mc <- mcols(bsdat[[i]])$C/(mcols(bsdat[[i]])$C+ mcols(bsdat[[i]])$T)
         mc <- as.matrix(mc)
         temp_gr <- bsdat[[i]]
