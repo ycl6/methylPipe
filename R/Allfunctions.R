@@ -429,7 +429,7 @@ mapBSdata2GRanges <- function(GenoRanges, Sample, context='all', mC=1, depth=0,
         if(mC > 0) indsList$mC <- which(mcols(gr)$C > mC)
         if(depth > 0) indsList$d <- which((mcols(gr)$C+mcols(gr)$T) > depth)
         pV <- -10*log10(pValue)
-        if(pValue < 1) indsList$p <- which(mcols(gr)$significance > pV)
+        if(pValue < 1) indsList$p <- which(mcols(gr)$Significance > pV)
         tableInds <- table(unlist(indsList))
         inds <- names(tableInds)[tableInds == length(indsList)]
         if(is.null(inds) || length(inds) == 0) return(NA)
