@@ -240,9 +240,8 @@ See the documentation of the \Rfunction{plotMeth} for more details.
 library(TxDb.Hsapiens.UCSC.hg18.knownGene)
 txdb <- TxDb.Hsapiens.UCSC.hg18.knownGene
 gel <- GElist(gecIMR90=gec.IMR90[1:10], gecH1=gec.H1[1:10])
-plotMeth(gel, datatype=c("mC","mC"), yLim=c(.025, .025), brmeth=H1.IMR90.set,
-         mcContext="CG", Datatrackname=c("Abs meth","Abs meth","H1","IMR90"), 
-         transcriptDB=txdb, chr="chr20", org=Hsapiens)
+plotMeth(gel, colors=c("red","blue"), datatype=c("mC","mC"), yLim=c(.025, .025), brmeth=list(IMR90=IMR90.db, H1=H1.db),
+         mcContext="CG", transcriptDB=txdb, chr="chr20", start=14350, end=277370, org=Hsapiens)
 @
 
 \section{Differential DNA methylation}
