@@ -36,11 +36,11 @@ meth.call(files_location, output_folder, no_overlap, read.context, Nproc)
   methylation sequence context (either CG, CHG or CHH),
   number (>0) of sequencing reads with C calls at that genomic position,
   number of sequencing reads with T calls at that genomic position.
-  In addition a GRanges object consisting of genomic regions uncovered
-  by sequencing is generated and saved in the output folder for each sample. 
-  This information is used to distinguish unmethylated cytosines from
-  those that are not covered by sequencing. This GRanges object is used
-  further to provide uncovered regions information while creating BSdata
+  In addition a GRanges object consisting of genomic regions with
+  sequencing coverage information is generated and saved in the output 
+  folder for each sample. This information is used to distinguish unmethylated 
+  cytosines from those that are not covered by sequencing. This GRanges object 
+  is used further to provide uncovered regions information while creating BSdata
   object by \code{\link{BSdata}} method.
 }
 \value{
