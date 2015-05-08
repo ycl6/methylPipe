@@ -589,7 +589,7 @@ getCposChr <- function(GenoRanges, seqContext, chrseq, nbins) {
             endPos <- binsize
             for(bin in 1:Nbins)
                 {
-                    ind <- which(Cpos[[i]] > startPos & Cpos[[i]] < endPos)
+                    ind <- which(Cpos[[i]] >= startPos & Cpos[[i]] =< endPos)
                     binList[[bin]] <- Cpos[[i]][ind]
                     startPos <- endPos+1
                     endPos <- endPos+binsize

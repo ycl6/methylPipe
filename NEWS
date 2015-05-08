@@ -5,6 +5,7 @@ o updated or fixed the following functions:
 
    + meth.call: coverage is outputted now as an GRanges object
    + findDMR: coverage threshold is used even for unmethylated cytosines
+   + getCposChr: fixed bug which was ignoring Cytosines at the boundary of genomic ranges on both sides
 
 CHANGES IN VERSION 1.2.1
 ------------------------
