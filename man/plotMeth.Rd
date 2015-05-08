@@ -5,14 +5,15 @@
   Plot DNA methylation data (either high- or low-resolution) together with other omics data (ChIP-seq, RNA-seq), or annotation tracks for one genomic region (genome-browser like view based on gviz).
 }
 \usage{
-plotMeth(grl=NULL, colors=NULL, datatype=NULL, yLim, brmeth=NULL, mcContext="CG", annodata=NULL, transcriptDB,
-chr, start, end, org)
+plotMeth(grl=NULL, colors=NULL, datatype=NULL, yLim, brmeth=NULL, mcContext="CG", annodata=NULL, 
+transcriptDB, chr, start, end, org)
 }
 \arguments{
-  \item{grl}{An object of class \link{GElist} or a potentially mixed \link{list} of \link{GRanges} or \link{GEcollection}} objecs
+  \item{grl}{An object of class \link{GElist} or a potentially mixed \link{list} of \link{GRanges} or \link{GEcollection} objects}
   \item{colors}{character of length equal to grl; name of colors to display data tracks from the grl object}
   \item{datatype}{character of length equal to grl; one of C, mC , rC, density or cols}
-  \item{yLim}{numeric vector with the same length of grl setting maximum values}  
+  \item{yLim}{numeric vector with the same length of grl setting
+    maximum values}  
   \item{brmeth}{A list of object of class \link{BSdata}}
   \item{mcContext}{character; one of all, CG, CHG or CHH} 
   \item{annodata}{An object of class \link{GRangesList}}

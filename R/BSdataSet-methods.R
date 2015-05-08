@@ -156,6 +156,7 @@ setMethod('findDMR', 'BSdataSet', function(object, Nproc=10, ROI=NULL,
                                         # removing cytosines positions not covered by sequencing
             uncov <- samples[[i]]@uncov
             uncov <- uncov[seqnames(uncov) == Chr]
+            uncov <- uncov[mcols(uncov)$score < Coverage]
             ov <- findOverlaps(ratioGR, uncov)
             if(length(ov)>0) ratioGR <- ratioGR[-unique(queryHits(ov))]
             if(length(ratioGR)== 0) return(NULL)

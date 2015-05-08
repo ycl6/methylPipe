@@ -1,3 +1,11 @@
+CHANGES IN VERSION 1.2.3
+------------------------
+
+o updated or fixed the following functions:
+
+   + meth.call: coverage is outputted now as an GRanges object
+   + findDMR: coverage threshold is used even for unmethylated cytosines
+
 CHANGES IN VERSION 1.2.1
 ------------------------
 
