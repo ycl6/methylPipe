@@ -1,7 +1,7 @@
 Package: methylPipe
 Type: Package
 Title: Base resolution DNA methylation data analysis
-Version: 1.3.2
+Version: 1.3.3
 Date: 2015-05-08
 Author: Kamal Kishore
 Maintainer: Kamal Kishore <kamal.fartiyal84@gmail.com>
@@ -12,7 +12,7 @@ License: GPL(>=2)
 LazyLoad: yes
 Imports: marray, gplots, IRanges, BiocGenerics, Gviz, GenomicAlignments, Biostrings,
   parallel, data.table, GenomeInfoDb, S4Vectors
-Depends: R (>= 3.1.1), methods, grDevices, graphics, stats, utils, GenomicRanges, Rsamtools 
+Depends: R (>= 3.1.1), methods, grDevices, graphics, stats, utils, GenomicRanges, SummarizedExperiment, Rsamtools 
 Suggests: BSgenome.Hsapiens.UCSC.hg18,
         TxDb.Hsapiens.UCSC.hg18.knownGene, knitr, MethylSeekR
 VignetteBuilder: knitr

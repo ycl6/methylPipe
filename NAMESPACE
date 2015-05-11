@@ -1,10 +1,12 @@
 useDynLib(methylPipe, .registration=TRUE)
 import(methods)
-import(Gviz)
-import(Rsamtools)
-import(IRanges)
 import(S4Vectors)
+import(IRanges)
+import(GenomicRanges)
+import(SummarizedExperiment)
 import(Biostrings)
+import(Rsamtools)
+import(Gviz)
 
 importFrom(GenomicAlignments,readGAlignments,seqnames, width, coverage)
 importFrom(marray, maPalette)
@@ -12,13 +14,9 @@ importFrom(gplots, heatmap.2)
 importFrom(BiocGenerics,rbind, width, strand, "strand<-", as.data.frame, unlist)
 importFrom(parallel, makeCluster)
 importFrom(data.table,fread)
-importFrom(GenomicRanges,GRanges, GRangesList, coverage, rowData, assays)
 importFrom(GenomeInfoDb,seqlengths,"seqlengths<-",seqnames)
 
 importMethodsFrom(BiocGenerics, clusterApplyLB, clusterEvalQ)
-
-importClassesFrom(GenomicRanges,SummarizedExperiment)
-importMethodsFrom(GenomicRanges,SummarizedExperiment)
 
 exportPattern("^[^\\.]")
 

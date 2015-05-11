@@ -57,7 +57,7 @@ setValidity("BSdataSet", function(object) {
 })
 
 
-setClass(Class = 'GEcollection', contains = "SummarizedExperiment",
+setClass(Class = 'GEcollection', contains = "RangedSummarizedExperiment",
          prototype = prototype(SummarizedExperiment(assays = SimpleList(binmC = matrix(0, 0, 0),
                                                         binC = matrix(0, 0, 0),
                                                         binrC = matrix(0, 0, 0),

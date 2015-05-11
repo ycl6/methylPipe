@@ -199,7 +199,7 @@ these regions can be usually retrieved from either publications or public databa
 the UCSC Genome Browser and its Table Browser tools (see \Rpackage{compEpiTools} for methods 
 for generation/manipulation of these regions). The \Rclass{GEcollection} class has 
 data slots and methods tailored for storing and analyzing DNA methylation data. 
-It is an extension of \Rclass{SummarizedExperiment} class of \Rclass{GenomicRanges} package. 
+It is an extension of the \Rclass{RangedSummarizedExperiment} class from the \Rpackage{SummarizedExperiment} package. 
 
 For the creation of the \Rclass{GEcollection}, the \Rfunction{getCpos} and \Rfunction{mapBSdata2GRanges} 
 methods are called automatically to populate its various data slots. Further arguments of 

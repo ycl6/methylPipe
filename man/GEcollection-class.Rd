@@ -25,12 +25,12 @@
   manipulate a set of genomic regions and the associated DNA methylation
   patterns}
 \section{Objects from the Class}{
-  This class is an extension of \link{SummarizedExperiment} class of
-  GenomicRanges R package. Objects can be created using the function
-  \code{profileDNAmetBin} which determines the absolute and relative
-  methylation level by filling the binC, binmC and binrC slots. The
-  assays slot \link{SummarizedExperiment} class here consists of four
-  slots.
+  This class is an extension of the \link{RangedSummarizedExperiment} class
+  from the \pkg{SummarizedExperiment} package. Objects can be created using
+  the function \code{profileDNAmetBin} which determines the absolute and
+  relative methylation level by filling the binC, binmC and binrC slots. The
+  assays slot of the \link{RangedSummarizedExperiment} class here consists of
+  four matrices:
 \itemize{
 \item binC: each genomic region is divided in one or more bins and for each
   bin the density (per bp) of potential methylation sites is determined.
