@@ -653,6 +653,10 @@ profileDNAmetBin <- function(GenoRanges, Sample,
     binmC <- matrix(unlist(mlsum), length(mlsum), Nbins, byrow=T)
     unmethList <- list()
     uncov <- Sample@uncov
+    uncov <- uncov[mcols(uncov)$score <= depthThr]
+    seqlengths(uncov) <- NA
+    seqlengths(GenoRanges) <- NA
+    ### missing sequencing coverage has value NA and unmethylated has value 0
     for(bin in 1:Nbins) {
       gel <- extractBinGRanges(GenoRanges=GenoRanges, bin=bin, nbins=Nbins)
       ov <- findOverlaps(gel,uncov)
@@ -663,8 +667,11 @@ profileDNAmetBin <- function(GenoRanges, Sample,
         val[ind] <- NA
         unmethList[[bin]] <- val 
       }
-      else 
-        unmethList[[bin]] <- 0
+      else
+      {
+        val <- rep(0,length(GenoRanges))
+        unmethList[[bin]] <- val
+      }  
     }
     
     unmethList <- matrix(unlist(unmethList), Nbins, length(GenoRanges), byrow=T)
@@ -683,6 +690,10 @@ profileDNAmetBin <- function(GenoRanges, Sample,
     binC <- matrix(unlist(CposD), length(CposD), Nbins, byrow=T)
 
                                         # reversing for minus strand if strand is defined
+    
+    if(is.null(dim(binmC)))
+      binmC <- matrix(binmC, nrow=1, ncol=length(binmC), byrow=T)
+    
     minusStrand <- which(as.character(strand(GenoRanges)) == '-')
     if(length(minusStrand) > 0) {
         binmC[minusStrand,] <- binmC[minusStrand, Nbins:1]
@@ -699,9 +710,7 @@ profileDNAmetBin <- function(GenoRanges, Sample,
     binrC[is.infinite(binrC)] <- NA
 
                                         # adding uncovered region information
-    maskUncovered <- Sample@uncov
-    seqlengths(maskUncovered) <- NA
-    seqlengths(GenoRanges) <- NA
+    maskUncovered <- uncov
     suppressWarnings(nonCoveredInds <- findOverlaps(GenoRanges, maskUncovered))
     orgInds <- queryHits(nonCoveredInds)
     binrC[orgInds,] <- NA
