@@ -12,7 +12,7 @@ License: GPL(>=2)
 LazyLoad: yes
 Imports: marray, gplots, IRanges, BiocGenerics, Gviz, GenomicAlignments, Biostrings,
   parallel, data.table, GenomeInfoDb, S4Vectors
-Depends: R (>= 3.1.1), methods, grDevices, graphics, stats, utils, GenomicRanges, SummarizedExperiment, Rsamtools 
+Depends: R (>= 3.2.0), methods, grDevices, graphics, stats, utils, GenomicRanges, SummarizedExperiment, Rsamtools 
 Suggests: BSgenome.Hsapiens.UCSC.hg18,
         TxDb.Hsapiens.UCSC.hg18.knownGene, knitr, MethylSeekR
 VignetteBuilder: knitr
