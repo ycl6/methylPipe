@@ -104,7 +104,8 @@ meth.call <- function(files_location, output_folder, no_overlap, read.context, N
             aln_file <- bam.files[i]
             aln <- readGAlignments(aln_file)
             cov <- coverage(aln)
-            ind <- sapply(cov, function(x)(length(which(runValue(x)== 0))))
+            #ind <- sapply(cov, function(x)(length(which(runValue(x)== 0))))
+            ind <- sapply(cov, function(x)(length(runValue(x))))
             cov <- cov[which(ind > 1)]
             uncov_GR <- as(cov, "GRanges")
             #uncov_GR <- uncov_GR[mcols(uncov_GR)$score== 0]
