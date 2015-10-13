@@ -1,7 +1,7 @@
 Package: methylPipe
 Type: Package
 Title: Base resolution DNA methylation data analysis
-Version: 1.4.0
+Version: 1.5.0
 Date: 2015-09-29
 Author: Kamal Kishore
 Maintainer: Kamal Kishore <kamal.fartiyal84@gmail.com>
