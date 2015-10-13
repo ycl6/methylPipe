@@ -1,0 +1,72 @@
+CHANGES IN VERSION 1.3.3
+------------------------
+
+o updated or fixed the following functions:
+
+   + profileDNAmetBinParallel: fixed the error when there is single minus strand in GRanges for profiling
+
+CHANGES IN VERSION 1.3.2
+------------------------
+
+o updated or fixed the following functions:
+
+   + meth.call: coverage is outputted now as an GRanges object
+   + findDMR: coverage threshold is used even for unmethylated cytosines
+   + getCposChr: fixed bug which was ignoring Cytosines at the boundary of genomic ranges on both sides
+
+CHANGES IN VERSION 1.2.1
+------------------------
+
+o updated or fixed the following functions:
+
+   + plotMeth: updated arguments: grl, brmeth and genomic co-ordinates; removed arguments: Datatrackname 
+   + updated vignette
+
+
+CHANGES IN VERSION 1.0.4
+------------------------
+
+o updated or fixed the following functions:
+
+   + BSprepare: fixed the problem of chromosome name with numeric values
+   + updated all examples with updated tabix indexed files
+   + updated vignette
+  
+
+CHANGES IN VERSION 1.0.3
+------------------------
+
+o updated or fixed the following functions:
+
+   + BSprepare: fixed the problem of unsorted files
+   + BSprepare: fixed the problem of methylation files with numeric chromosome name
+   + methstats: Added a new function to provide descriptive statistics of methylation data
+  
+
+
+CHANGES IN VERSION 1.0.2
+------------------------
+
+o updated or fixed the following functions:
+
+   + profileDNAmetBinParallel
+   + updated R version dependency information
+
+CHANGES IN VERSION 1.0.0
+------------------------
+ o initial version with the following functions implemented:
+   + mCsmoothing
+   + findPMDs
+   + plotAnnoBar
+   + mapBSdata2GRanges
+   + findDMR
+   + consolidateDMRs
+   + getCpos
+   + profileDNAmetBin
+   + plotMeth
+   + BSprepare
+   + meth.call
+   + GElist-class
+   + GEcollection-class
+   + BSdataSet-class
+   + BSdata-class
