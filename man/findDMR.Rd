@@ -10,7 +10,7 @@
   samples comparision.
 }
 \usage{
-\S4method{findDMR}{methylPipe,BSdataSet}(object, Nproc=10, ROI=NULL,
+\S4method{findDMR}{methylPipe,BSdataSet}(object, Nproc=NULL, ROI=NULL,
 pmdGRanges=NULL, MCClass='mCG', dmrSize=10, dmrBp=1000, binsize=0,
 eprop=0.3, coverage=1, Pvalue=NULL, SNPs=NULL)
 }
@@ -43,7 +43,7 @@ eprop=0.3, coverage=1, Pvalue=NULL, SNPs=NULL)
   dmrBp of 50000 and a binsize of 1000 are used. For CpG methylation in
   human and both CpG and nonCG methylation in plants the default
   settings are usually fine. Partially Methylated Domains are usually
-  found in differentiated cells and can constitute up tp one third of
+  found in differentiated cells and can constitute up to one third of
   the genome (Lister R et al, Nature 2009). Usually DMRs are not
   selected within those regions especially when comparing differentiated
   and pluripotent cells. Eprop is used to speed up the

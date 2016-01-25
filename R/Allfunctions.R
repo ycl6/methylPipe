@@ -108,7 +108,7 @@ meth.call <- function(files_location, output_folder, no_overlap, read.context, N
             ind <- sapply(cov, function(x)(length(runValue(x))))
             cov <- cov[which(ind > 1)]
             uncov_GR <- as(cov, "GRanges")
-            #uncov_GR <- uncov_GR[mcols(uncov_GR)$score== 0]
+            uncov_GR <- uncov_GR[mcols(uncov_GR)$score== 0]
             filename <- file.path(output_folder, paste0(sample_name[[i]],"_uncov", ".Rdata"))
             Objectout <- paste0(sample_name[[i]],"_uncov")
             assign(Objectout, uncov_GR)
@@ -122,6 +122,30 @@ meth.call <- function(files_location, output_folder, no_overlap, read.context, N
     message()
     message("Processing done Successfully...")
     message()
+}
+
+#### combining reads of replicates within a single group 
+pool.reads <- function(files_location)
+{
+  if(!is.character(files_location))
+    stop('files_location has to be of class character ..')
+  files_location <- normalizePath(files_location)
+  all_files <- list.files(files_location,pattern=".txt")
+  setwd(files_location)
+  cmd <- paste("cat", paste(all_files, collapse= " "), ">", paste0(files_location, "/", "sample_merge.txt"))
+  system(cmd)
+  python.loc <- system.file("exec", "pools_reads.py", package="methylPipe")
+  #python.loc <- "/data/BA/kkishore/Collaboration_Tel_Aviv/methcall/test_merge/pools_reads.py"
+  merge_file_loc <- paste0(files_location, "/", "sample_merge.txt")
+  cmd <- paste("python", python.loc, merge_file_loc, ">",paste0(files_location, "/","sample_merge_pooled.txt"))
+  system(cmd)
+  cmd <- paste("sort -k1,1 -k2,4n", paste0(files_location, "/", "sample_merge_pooled.txt") , ">", 
+               paste0(files_location, "/", "sample_merge_pooled_sort.txt"))
+  system(cmd)
+  cmd <- paste("rm","*_merge.txt")
+  system(cmd)
+  cmd <- paste("rm","*_merge_pooled.txt")
+  system(cmd)
 }
 
 

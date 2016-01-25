@@ -17,9 +17,7 @@ BSprepare(files_location, output_folder, tabixPath, bc=1.5/100)
 }
 \details{This function can be used to convert tabular files containing
   DNA-methylation base-resolution data so that they can be used to
-  create a BSdata object. A collection of files, one for each
-  chromosome, has to be passed to BSprepare for a given sample (DNA
-  methylome). Genomic coordinates in the 1-base system are
+  create a BSdata object. Genomic coordinates in the 1-base system are
   required, i.e. the first base of each chromosome should be at position 1.
   Files have to be tab-delimited and they have to contain the
   following columns:

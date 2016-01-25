@@ -1,3 +1,24 @@
+CHANGES IN VERSION 1.4.3
+------------------------
+
+o updated or fixed the following functions:
+
+   + findDMR: updated the function to allow it to run without number of processor specification
+
+CHANGES IN VERSION 1.4.2
+------------------------
+
+o updated or fixed the following functions:
+
+   + meth.stats: updated the coverage object error in this function
+
+CHANGES IN VERSION 1.4.1
+------------------------
+
+o updated or fixed the following functions:
+
+   + pool.reads: added this new function to pool reads of replicates into a single file for each condition
+
 CHANGES IN VERSION 1.3.3
 ------------------------
 

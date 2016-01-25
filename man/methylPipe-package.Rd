@@ -30,7 +30,8 @@ The package offers the following functionalities:
 \item profileDNAmetBin : Profile DNA methylation data for a set of genomic regions
 \item plotMeth : Plot the methylation/omics data of a GEcollection object	    
 \item BSprepare : Preparing tabular data to be used to feed a BSdata object	    
-\item meth.call : Reads the methylation information from the sorted SAM files generated from BISMARK aligner	     
+\item meth.call : Reads the methylation information from the sorted SAM files generated from BISMARK aligner
+\item pool.reads : Combine reads of replicates within a group  
 \item GElist-class : This class is a set of GEcollection objects	
 } 
 }

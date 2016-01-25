@@ -45,17 +45,17 @@ setMethod("$", "BSdataSet", function(x, name){
 
                                         # get DMR GRanges
 setGeneric('findDMR',
-           function(object, Nproc=10, ROI=NULL,
+           function(object, Nproc=NULL, ROI=NULL,
                     pmdGRanges=NULL, MCClass='mCG',
                     dmrSize=10, dmrBp=1000, binsize=0,
                     eprop=0, coverage=1, Pvalue=NULL, SNPs=NULL)
            standardGeneric('findDMR'))
-setMethod('findDMR', 'BSdataSet', function(object, Nproc=10, ROI=NULL,
+setMethod('findDMR', 'BSdataSet', function(object, Nproc=NULL, ROI=NULL,
                                            pmdGRanges=NULL, MCClass='mCG',
                                            dmrSize=10, dmrBp=1000,
                                            binsize=0, eprop=0, coverage=1, Pvalue=NULL, SNPs=NULL) {
-    if(!is.numeric(Nproc))
-        stop('Nproc has to be of class numeric ..')
+    if(!is.numeric(Nproc) && !is.null(Nproc))
+        stop('Nproc has to be of class numeric or NULL..')
     if(!is.null(pmdGRanges) && !is(pmdGRanges, "GRanges"))
         stop('pmdGRanges has to be either NULL or an object of class GRanges ..')
     if(!is.null(ROI) && !is(ROI, "GRanges"))
@@ -134,7 +134,8 @@ setMethod('findDMR', 'BSdataSet', function(object, Nproc=10, ROI=NULL,
                 torm <- which((Cposind %in% covrm)==TRUE)
                 Cposind <- Cposind[-c(torm)]
             }
-
+    
+        if(length(Cposind)==0) return(NULL)
         message('building ratioGR .. ')
         ratioMat <- matrix(0, length(Cposind), length(samples))
         ratioGR <- GRanges(Rle(Chr), IRanges(Cposind, Cposind), elementmetaData=ratioMat)
@@ -261,7 +262,7 @@ setMethod('findDMR', 'BSdataSet', function(object, Nproc=10, ROI=NULL,
         message('looking for DMRs .. ')
         for(i in 1:length(diffInds)) {
             counter <- counter+1
-            if(counter/100 == trunc(counter/100)) message(paste(counter, '', sep=''))
+            if(counter/10000 == trunc(counter/10000)) message(paste(counter, '', sep=''))
             ind <- diffInds[i]
             if(as.logical((Cposind[ind]- oldPos) < DmrBp/2)) next
                                         # looking from the current position ind till ind + dmrSize
@@ -334,6 +335,7 @@ setMethod('findDMR', 'BSdataSet', function(object, Nproc=10, ROI=NULL,
                 oldPos <- Cposind[ind]
             }
         }
+        rm(ratioGR)
         NAinds <- which(is.na(dmrDf$start))
         if(length(NAinds)>0) dmrDf <- dmrDf[-NAinds,]
         if(nrow(dmrDf)==0) dmrDf <- NA
@@ -356,13 +358,23 @@ setMethod('findDMR', 'BSdataSet', function(object, Nproc=10, ROI=NULL,
     else
         blocks <- splitChrs(chrs=Chrs, org=object@org)
 
-    cl <- makeCluster(Nproc, type='PSOCK')
-    clRes <- clusterApplyLB(cl, 1:nrow(blocks),
-                            DMRchr, Blocks=blocks, PMDs=pmdGRanges,
-                            samples=object, MCClass=MCClass,
-                            DmrSize=dmrSize, DmrBp=dmrBp,
-                            Binsize=binsize, Eprop=eprop, Coverage=coverage, pValue=Pvalue, SNP=SNPs)
-    DmrDf <- NULL
+    if(is.numeric(Nproc))
+    {
+      cl <- makeCluster(Nproc, type='PSOCK',outfile='clusterlog.txt')
+      clRes <- clusterApplyLB(cl, 1:nrow(blocks),
+                              DMRchr, Blocks=blocks, PMDs=pmdGRanges,
+                              samples=object, MCClass=MCClass,
+                              DmrSize=dmrSize, DmrBp=dmrBp,
+                              Binsize=binsize, Eprop=eprop, Coverage=coverage, pValue=Pvalue, SNP=SNPs)
+      stopCluster(cl)
+    }
+    else
+    {
+      clRes <- lapply(1:nrow(blocks),DMRchr, Blocks=blocks, PMDs=pmdGRanges,
+                              samples=object, MCClass=MCClass,DmrSize=dmrSize, DmrBp=dmrBp,
+                              Binsize=binsize, Eprop=eprop, Coverage=coverage, pValue=Pvalue, SNP=SNPs)
+    }
+        DmrDf <- NULL
     for(clind in 1:length(clRes)) {
         if(is.null(clRes[[clind]])) next
         if(is.null(nrow(clRes[[clind]]))) next
@@ -373,6 +385,7 @@ setMethod('findDMR', 'BSdataSet', function(object, Nproc=10, ROI=NULL,
     if(length(NAinds) > 0) DmrDf <- DmrDf[-NAinds,]
     DmrGR <- GRanges(DmrDf[,1], IRanges(DmrDf[,2], DmrDf[,3]), pValue= DmrDf[,4],
                      MethDiff_Perc= DmrDf[,5], log2Enrichment= DmrDf[,6])
+    rm(DmrDf)
     DmrGR <- sort(DmrGR)
 })
 
@@ -428,6 +441,7 @@ setMethod('methstats', 'BSdataSet', function(object, chrom, mcClass='mCG', minC=
       # removing cytosines positions not covered by sequencing
       uncov <- samples[[i]]@uncov
       uncov <- uncov[seqnames(uncov) == Chr]
+      uncov <- uncov[mcols(uncov)$score < cov]
       ov <- findOverlaps(ratioGR, uncov)
       if(length(ov)>0) ratioGR <- ratioGR[-unique(queryHits(ov))]
       if(length(ratioGR)== 0) return(NULL)
@@ -461,11 +475,11 @@ setMethod('methstats', 'BSdataSet', function(object, chrom, mcClass='mCG', minC=
   else
     blocks <- splitChrs(chrs=Chrs, org=object@org)
   
-  cl <- makeCluster(Nproc, type='PSOCK')
-  #clusterEvalQ(cl, library(GenomicRanges))
+  cl <- makeCluster(Nproc, type='PSOCK',outfile='clusterlog.txt')
   clRes <- clusterApplyLB(cl, 1:nrow(blocks),
                           Methchr, Blocks=blocks, samples=object, 
                           mcContext=mcClass, mCs=minC, cov=coverage, Pval=pval)
+  stopCluster(cl)
   ind <- which(is.na(clRes)==TRUE)
   if(length(ind)!=0)
     clRes <- clRes[-c(ind)]
