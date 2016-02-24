@@ -758,7 +758,7 @@ profileDNAmetBin <- function(GenoRanges, Sample,
                                            binC=binC, binrC=binrC,
                                            binscore=binscore),
                                        rowRanges=GenoRanges))
-    rownames(Object) <- row_names
+    #rownames(Object) <- row_names
     Object
 }
 
