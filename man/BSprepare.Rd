@@ -7,13 +7,14 @@
   object.
 }
 \usage{
-BSprepare(files_location, output_folder, tabixPath, bc=1.5/100)
+BSprepare(files_location, output_folder, tabixPath, bc=1.5/100, addchr=TRUE)
 }
 \arguments{
   \item{files_location}{character; the path to the files}
   \item{output_folder}{character; the path to the output files}
   \item{tabixPath}{character; the path to the Tabix application folder}
   \item{bc}{numeric; combined bisulfite conversion and sequencing error rate}
+  \item{addchr}{logical; whether to append "chr" to the chromosome name}
 }
 \details{This function can be used to convert tabular files containing
   DNA-methylation base-resolution data so that they can be used to

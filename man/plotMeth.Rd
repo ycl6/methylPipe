@@ -6,7 +6,7 @@
 }
 \usage{
 plotMeth(grl=NULL, colors=NULL, datatype=NULL, yLim, brmeth=NULL, mcContext="CG", annodata=NULL, 
-transcriptDB, chr, start, end, org)
+transcriptDB, chr, start, end, org, ucscOrg=TRUE, bands=NULL)
 }
 \arguments{
   \item{grl}{An object of class \link{GElist} or a potentially mixed \link{list} of \link{GRanges} or \link{GEcollection} objects}
@@ -22,6 +22,8 @@ transcriptDB, chr, start, end, org)
   \item{start}{numeric; chromosome start}
   \item{end}{numeric; chromosome end}
   \item{org}{BSgenome; an object of class BSgenome}
+  \item{ucscOrg}{logical; whether the BSgenome is for a valid UCSC genome}
+  \item{bands}{An object of class data frame}
 }
 \details{
 This function can be used to display for one genomic region (genome-browser like) DNA methylation data together with other omics data or static annotation info. The genomic region is indicated by chr, start and end. Specifically, grl is used to display binned high- or low-resolution data, while brmeth is used to point to (unbinned) base-resolution data. Each component of grl can either be a GEcollection or a GRanges.
