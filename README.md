@@ -5,14 +5,14 @@ Some of the functions in the original package is not compatible with non-UCSC ge
 ### Changes
 ##### R/BSdataSet-methods.R
 1. methstats()
-* line 548 - disable dev.new() when using pdf()
+  * line 548 - disable dev.new() when using pdf()
 
 ##### R/Allfunctions.R
 1. BSprepare()
-* line 187 - add "addchr" switch
-* line 226 - check "addchr"
+  * line 187 - add "addchr" switch
+  * line 226 - check "addchr"
 
 2. plotMeth()
-* line 825 - add "ucscOrg" switch and band dataframe required if ucscOrg=FALSE
-* line 886-894 - use custom band dataframe to create Ideogram track with custom genome
+  * line 825 - add "ucscOrg" switch and band dataframe required if ucscOrg=FALSE
+  * line 886-894 - use custom band dataframe to create Ideogram track with custom genome
 
