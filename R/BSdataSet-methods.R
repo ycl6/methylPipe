@@ -545,7 +545,7 @@ setMethod('methstats', 'BSdataSet', function(object, chrom, mcClass='mCG', minC=
   clust_mat <- t(mc_table)
   dist_mat <- dist(clust_mat, method = "euclidean")
   x <- hclust(dist_mat)
-  dev.new()
+  if(names(dev.set()) != "pdf") dev.new() # disable dev.new() to work with pdf()
   plot(x, main="Methylation Clustering", xlab="Samples")
   return(statistics_results)
 }
