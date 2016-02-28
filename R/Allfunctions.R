@@ -184,7 +184,7 @@ GElist <- function(...)
 }
 
 
-BSprepare <-  function(files_location, output_folder, tabixPath, bc=1.5/100) {
+BSprepare <-  function(files_location, output_folder, tabixPath, bc=1.5/100, addchr=TRUE) { # addchr
     if(!is.character(files_location))
         stop('files_location has to be of class character ..')
     if(!is.character(output_folder))
@@ -223,7 +223,7 @@ BSprepare <-  function(files_location, output_folder, tabixPath, bc=1.5/100) {
     {
       path <- paste0(files_location,"/",all_files[[i]])
       temp_data <- fread(path,nrows=10)
-      if(length(grep("chr",temp_data$V1))==0)
+      if(length(grep("chr",temp_data$V1))==0 && addchr) # only append "chr" when addchr=TRUE
       {
         cmd <- paste("sed -i 's/\"//g'",path)
         system(cmd)
@@ -822,7 +822,7 @@ profileDNAmetBinParallel <- function(GenoRanges, Sample, mcCLASS='mCG',
                                   # function to plot gene locus visualization with methylation/omics data
 
 plotMeth <- function(grl=NULL, colors=NULL, datatype=NULL, yLim, brmeth=NULL, mcContext="CG", annodata=NULL, 
-                     transcriptDB, chr, start, end, org){
+                     transcriptDB, chr, start, end, org, ucscOrg=TRUE, bands=NULL){ # ucscOrg defines if BSgenome is a UCSC genome
     if(!is.null(grl) && !is(grl,'list') && !is(grl,'GElist'))
         stop('grl has to be either NULL or an object of class list or GElist...')
     if(is(grl,'list'))
@@ -883,8 +883,16 @@ plotMeth <- function(grl=NULL, colors=NULL, datatype=NULL, yLim, brmeth=NULL, mc
     if(!is(org, "BSgenome"))
       stop('org has to be of class BSgenome ..')
     
-    gen <- org@provider_version
-    itrack <- IdeogramTrack(genome = gen, chromosome = chr)
+    if(ucscOrg) {
+      gen <- org@provider_version
+      itrack <- IdeogramTrack(genome = gen, chromosome = chr)
+    } else {
+      options(ucscChromosomeNames=FALSE)
+      if(is.null(bands)) stop('band dataframe is missing..')
+      gen <- deparse(substitute(org)) # convert object name to string and used as genome name
+      itrack <- IdeogramTrack(genome = gen, chromosome = chr, bands = bands) # ideogram for custom genomes
+    }
+
     axisTrack <- GenomeAxisTrack()
     dTrack <- NULL
     brTrack <- NULL 
