@@ -134,8 +134,7 @@ pool.reads <- function(files_location)
   setwd(files_location)
   cmd <- paste("cat", paste(all_files, collapse= " "), ">", paste0(files_location, "/", "sample_merge.txt"))
   system(cmd)
-  python.loc <- system.file("exec", "pools_reads.py", package="methylPipe")
-  #python.loc <- "/data/BA/kkishore/Collaboration_Tel_Aviv/methcall/test_merge/pools_reads.py"
+  python.loc <- system.file("exec", "pool_reads.py", package="methylPipe")
   merge_file_loc <- paste0(files_location, "/", "sample_merge.txt")
   cmd <- paste("python", python.loc, merge_file_loc, ">",paste0(files_location, "/","sample_merge_pooled.txt"))
   system(cmd)
@@ -746,12 +745,17 @@ profileDNAmetBin <- function(GenoRanges, Sample,
     col_names <- c(1:Nbins)
     binmC <- signif(binmC, 3)
     colnames(binmC) <- col_names
+    rownames(binmC) <- NULL
     binC <- signif(binC, 3)
     colnames(binC) <- col_names
+    rownames(binC) <- NULL
     binrC <- signif(binrC, 3)
     colnames(binrC) <- col_names
+    rownames(binrC) <- NULL
     binscore <- matrix(NA, nrow(binmC),
                        ncol(binmC), dimnames=list(row_names, col_names))
+    rownames(binscore) <- NULL
+    #rownames(GenoRanges) <- row_names
                                         # saving chr results
     Object <- new("GEcollection",
                   SummarizedExperiment(assays=list(binmC=binmC,
